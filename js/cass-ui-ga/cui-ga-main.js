@@ -70,6 +70,7 @@ function buildFrameworkLists(arrayOfEcFrameworks) {
     else {
         createSortedAvailableFrameworkList(ownedFrameworkList,unownedFrameworkList);
         //TODO START HERE
+        showPageError("TODO: Start Analysis Setup");
     }
 }
 

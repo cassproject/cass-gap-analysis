@@ -197,6 +197,10 @@ input:checked~.switch-paddle {
 
 /* ---- MISC ---- */
 
+.modal-large-multi-select {
+    min-height: 10rem;
+}
+
 #gapHeader {
     color: rgb(17, 116, 154);
 }

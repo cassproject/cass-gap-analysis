@@ -42,6 +42,20 @@ const GAP_WELCOME_CTR = "#gapWelcomeContainer";
 //Warning Containers
 const NO_FRAMEWORKS_AVAILABLE_CTR = "#noFrameworksAvailableWarningContainer";
 
+//Add Profiles Modal
+const ADD_PRF_MODAL = "#modal-profile-select";
+const ADD_PRF_TYPE_SELECT = "#addProfTypeSelect";
+const ADD_PRF_RES_FLTR = "#addProfResultsFilter";
+const ADD_PRF_RES_SELECT = "#addProfResultsSelect";
+const ADD_PRF_RES_DESC = "#addProfResultsDesc";
+
+//Add Frameworks Modal
+const ADD_FWK_MODAL = "#modal-framework-select";
+const ADD_FWK_FLTR_TYPE_SELECT = "#addFwkFilterTypeSelect";
+const ADD_FWK_RES_FLTR = "#addFwkResultsFilter";
+const ADD_FWK_RES_SELECT = "#addFwkResultsSelect";
+const ADD_FWK_RES_DESC = "#addFwkResultsDesc";
+
 //**************************************************************************************************
 // Variables
 
@@ -171,6 +185,14 @@ if ( typeof String.prototype.endsWith != 'function' ) {
 //**************************************************************************************************
 // Gap Analysis Page UI Functions
 //**************************************************************************************************
+
+function setAddFwkResultsDesc(desc) {
+    $(ADD_FWK_RES_DESC).html(desc);
+}
+
+function setAddProfResultsDesc(desc) {
+    $(ADD_PRF_RES_DESC).html(desc);
+}
 
 function hideMainMenu() {
     $(GAP_MAIN_MENU_CTR).hide();

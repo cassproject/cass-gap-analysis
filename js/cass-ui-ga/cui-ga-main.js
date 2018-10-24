@@ -2,6 +2,9 @@
 // CASS UI Gap Analysis Main Functions
 //**************************************************************************************************
 
+//TODO openAdjustGapRulesModal
+//TODO checkForGapContentsSearchbarEnter
+
 //**************************************************************************************************
 // Constants
 
@@ -24,6 +27,32 @@ var currentFrameworkFull;
 // Utility Functions
 //**************************************************************************************************
 
+//TODO checkForGapContentsSearchbarEnter
+function checkForGapContentsSearchbarEnter(event) {
+    // if (event.which == 13 || event.keyCode == 13) {
+    //     $(FWK_CONT_SRCH_INPT).autocomplete("close");
+    //     findItemByFrameworkContentsSearchBar($(FWK_CONT_SRCH_INPT).val().trim());
+    // }
+}
+
+//**************************************************************************************************
+// Adjust Gap Rules Modal
+//**************************************************************************************************
+
+function openAdjustGapRulesModal() {
+    //TODO openAdjustGapRulesModal
+}
+
+//**************************************************************************************************
+// Add Framework Modal
+//**************************************************************************************************
+
+//**************************************************************************************************
+// Add Profile Modal
+//**************************************************************************************************
+
+function openAddProfileModal() {
+}
 
 //**************************************************************************************************
 // Explorer Circle Graph Supporting Functions
@@ -69,8 +98,7 @@ function buildFrameworkLists(arrayOfEcFrameworks) {
     }
     else {
         createSortedAvailableFrameworkList(ownedFrameworkList,unownedFrameworkList);
-        //TODO START HERE
-        showPageError("TODO: Start Analysis Setup");
+        showGapWelcome();
     }
 }
 
@@ -84,11 +112,9 @@ function handleFetchFrameworksFromRepositoryFailure(err) {
 }
 
 function fetchAvailableFrameworks() {
-    // disableViewToggleButtons();
-    // hideFrameworkExpTools();
-    // hideFrameworkContentsSearchBar();
-    // showGraphViewMainContentsScreen();
-    // setPageFrameworkExplorerName("Loading...");
+    disableAddItemButtons();
+    hideGapAnalysisTools();
+    hideGapContentsSearchBar();
     showPageAsBusy("Loading available frameworks...");
     EcFramework.search(repo, null, handleFetchFrameworksFromRepositorySuccess, handleFetchFrameworksFromRepositoryFailure, {'size':MAX_FWK_SEARCH_SIZE});
 }

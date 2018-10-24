@@ -27,6 +27,21 @@ const CASSUI_MODAL_BUSY_TXT = ".cassUiModalBusyText";
 const CASSUI_MODAL_ERROR_CTR = ".cassUiModalErrorCtr";
 const CASSUI_MODAL_ERROR_TXT = ".cassUiModalErrorText";
 
+const GAP_MAIN_MENU_CTR = "#ssmStickyCtr";
+const GAP_MAIN_MENU = "#section-sub-menu";
+const GAP_PAGE_TOOLS = "#page-tools";
+
+const ADD_PROF_BTN = "#addProfBtn";
+const ADD_FWK_BTN = "#addFwkBtn";
+
+const GAP_CONT_SRCH_CTR = "#gapContentsSearchContainer";
+const GAP_CONT_SRCH_INPT = "#gapContentsSearchInput";
+
+const GAP_WELCOME_CTR = "#gapWelcomeContainer";
+
+//Warning Containers
+const NO_FRAMEWORKS_AVAILABLE_CTR = "#noFrameworksAvailableWarningContainer";
+
 //**************************************************************************************************
 // Variables
 
@@ -74,7 +89,6 @@ function showPageMainContentsContainer() {
 function hidePageMainContentsContainer() {
     $(CASSUI_MAIN_CONTENTS_CTR).hide();
 }
-
 
 function showPageAsBusy(text) {
     $(CASSUI_MAIN_ERR_CTR).hide();
@@ -158,6 +172,60 @@ if ( typeof String.prototype.endsWith != 'function' ) {
 // Gap Analysis Page UI Functions
 //**************************************************************************************************
 
+function hideMainMenu() {
+    $(GAP_MAIN_MENU_CTR).hide();
+    $(GAP_MAIN_MENU).hide();
+}
+
+function showMainMenu() {
+    $(GAP_MAIN_MENU_CTR).show();
+    $(GAP_MAIN_MENU).show();
+}
+
+function showNoFrameworksAvailableWarning() {
+    $(CASSUI_MAIN_BUSY_CTR).hide();
+    $(CASSUI_MAIN_ERR_CTR).hide();
+    $(CASSUI_HIGH_LVL_WARNING).hide();
+    $(NO_FRAMEWORKS_AVAILABLE_CTR).show();
+}
+
+function disableAddItemButtons() {
+    $(ADD_PROF_BTN).attr("disabled", "true");
+    $(ADD_FWK_BTN).attr("disabled", "true");
+}
+
+function enableAddItemButtons() {
+    $(ADD_PROF_BTN).removeAttr("disabled");
+    $(ADD_FWK_BTN).removeAttr("disabled");
+}
+
+function hideGapContentsSearchBar() {
+    $(GAP_CONT_SRCH_CTR).hide();
+}
+
+function showGapContentsSearchBar() {
+    $(GAP_CONT_SRCH_CTR).show();
+}
+
+function showGapAnalysisTools() {
+    $(GAP_PAGE_TOOLS).show();
+}
+
+function hideGapAnalysisTools() {
+    $(GAP_PAGE_TOOLS).hide();
+}
+
+function hideGapWelcome() {
+    $(GAP_WELCOME_CTR).hide();
+}
+
+function showGapWelcome() {
+    hideMainMenu();
+    $(CASSUI_MAIN_BUSY_CTR).hide();
+    $(CASSUI_MAIN_ERR_CTR).hide();
+    $(CASSUI_MAIN_CONTENTS_CTR).hide();
+    $(GAP_WELCOME_CTR).show();
+}
 
 //**************************************************************************************************
 // JQuery Functions

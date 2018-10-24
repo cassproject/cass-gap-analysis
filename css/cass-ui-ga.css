@@ -8,7 +8,6 @@ body {
 }
 
 /* ---- UTILITY ---- */
-
 tspan{
     pointer-events: none;
 }
@@ -118,173 +117,42 @@ input:checked~.switch-paddle {
     float: right;
 }
 
-/* ---- BURGENDY Theme ---- */
-
-.burgendy {
-    color: #b36a79;
-}
-.burgendy-back {
-    background-color: #b36a79;
-}
-
-body.theme-burgendy #section-sub-menu #frameworkContentsSearchContainer #frameworkExpHeader .button {
-    background-color: #662a36;
-}
-body.theme-burgendy #section-sub-menu #frameworkContentsSearchContainer .button:hover {
-    background-color: #662a36;
-}
-
-body.theme-burgendy  h3, h2 {
-    color: #662a36;
-}
-body.theme-burgendy .gpsi {
-    color: #000;
-}
-
-body.theme-burgendy .dropdown.menu .is-active>a,
-body.theme-burgendy a {
-    color: #000;
-}
-
-body.theme-burgendy .dropdown.menu>li.is-dropdown-submenu-parent>a::after {
-    border-color: #000 transparent transparent;
-}
-
-body.theme-burgendy a:hover {
-    color: #662a36;
-}
-
-body.theme-burgendy .expCircleGraph .node--leaf {
-    fill: rgba(241,105,135,1);
-}
-
-/*body.theme-burgendy .expCircleGraph .label {*/
-    /*stroke: rgb(102, 42, 54);*/
-    /*stroke-width: 1px;*/
-    /*stroke-linecap: butt;*/
-    /*stroke-linejoin: round;*/
-    /*!*    text-shadow: 0 1px 0 #000, 1px 0 0 #000, -1px 0 0 #000, 0 -1px 0 #000, 0 2px 0 #000, 2px 0 0 #000, -2px 0 0 #000, 0 -2px 0 #000;*!*/
-/*}*/
-
-body.theme-burgendy #circleFocusDetailsRelList li:hover {
-    color: rgb(151, 83, 95);
-}
-
-body.theme-burgendy #circleFocusDetailsRelList a:hover {
-    color: rgb(151, 83, 95) !important;
-}
-
-body.theme-burgendy #fwkShareContactsListContainer {
-    background-color: #d9bcc1;
-}
-
-/* ---- LIST VIEW SCREEN ---- */
-
-#filter-options {
-    position: fixed;
-    left: 2em;
-    margin-top: 2em;
-    padding: 1em;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-#filter-options li .fa {
-    visibility: hidden;
-}
-
-#filter-options li.active .fa,
-#filter-options li:hover .fa {
-    visibility: visible;
-}
-
-#filter-options .active {
-    font-weight: bold;
-}
-
-#filter-options .active a {
-    cursor: default;
-}
-
-#list-screen__root > li > h3,
-#list-screen__root > li > h4 {
-    font-weight: bold;
-}
-
-#list-screen__root li li li h4 {
-    font-size: 1.25rem;
-}
-
-#list-screen__root li > h3,
-#list-screen__root li > h4 {
-    margin: .5em 0 0 0;
-}
-
-#list-screen__root li.expanded > h3,
-#list-screen__root li.collapsed > h3,
-#list-screen__root li.expanded > h4,
-#list-screen__root li.collapsed > h4 {
-    cursor: pointer;
-}
-
-#list-screen__root li.expanded > h3:hover,
-#list-screen__root li.collapsed > h3:hover,
-#list-screen__root li.expanded > h4:hover,
-#list-screen__root li.collapsed > h4:hover {
-    color: #137499;
-}
-
-#list-screen__root p {
-    margin: 0;
-}
-
-#list-screen__root .competency-type {
-    float: right;
-    color: #7c7c7c;
-    text-transform: uppercase;
-    font-size: .9em;
-}
-
-#list-screen__root .competency-type .fa {
-    font-size: 1.3em;
-    /*    color: #000;*/
-}
 
 /* ---- CIRCLE GRAPH SCREEN ---- */
 
-#exp-circle-graph-wrapper {
+#gap-circle-graph-wrapper {
     overflow: hidden;
     margin: 0 auto;
     padding-bottom: 100%;
     max-height: 300px;
 }
 
-#exp-circle-graph-wrapper svg {
+#gap-circle-graph-wrapper svg {
     position: absolute;
     width: 95%;
     height: 90%;
 }
 
-#exp-circle-graph-wrapper .node.node--root {
+#gap-circle-graph-wrapper .node.node--root {
     fill: transparent !important;
 }
 
-#explorerCirclePack {
+#gapCirclePack {
     fill: transparent !important;
     background: white;
 }
 
-.expCircleGraph .node.invalid{
+.gapCircleGraph .node.invalid{
     stroke:#FFFFFF;
     stroke-width:2;
     stroke-dasharray: 4;
 }
 
-.expCircleGraph .node {
+.gapCircleGraph .node {
     cursor: pointer;
 }
 
-.expCircleGraph .node:hover {
+.gapCircleGraph .node:hover {
     filter: none;
 }
 
@@ -292,10 +160,10 @@ body.theme-burgendy #fwkShareContactsListContainer {
     opacity:1 !important;
 }
 
-.expCircleGraph .node--leaf {
+.gapCircleGraph .node--leaf {
 }
 
-.expCircleGraph .label {
+.gapCircleGraph .label {
     fill: #fff;
     font-size: 12px;
     text-anchor: middle;
@@ -306,7 +174,7 @@ body.theme-burgendy #fwkShareContactsListContainer {
     stroke-linejoin: round;
 }
 
-.expCircleGraph .label-background {
+.gapCircleGraph .label-background {
     fill: #fff;
     font-size: .6rem;
     text-anchor: middle;
@@ -317,102 +185,22 @@ body.theme-burgendy #fwkShareContactsListContainer {
     stroke-linejoin: round;
 }
 
-.expCircleGraph .label,
-.expCircleGraph .node--root,
-.expCircleGraph .node--leaf {
+.gapCircleGraph .label,
+.gapCircleGraph .node--root,
+.gapCircleGraph .node--leaf {
     pointer-events: all;
 }
 
-.expCircleGraph circle {
+.gapCircleGraph circle {
     pointer-events: all;
 }
 
 /* ---- MISC ---- */
 
-#frameworkExpHeader,
-#circleFocusSummaryName {
-    cursor: pointer;
+#gapHeader {
+    color: rgb(17, 116, 154);
 }
 
-#circleFocusDetailsSingleDesc {
-    font-size: .95rem;
-}
-
-#circleFocusDetailsSidebar,
-#circleFocusSummarySidebar {
-    margin-top: 1rem;
-}
-
-#circleFocusSummarySidebar {
-    padding-left: 1.5rem;
-}
-
-#circleFocusSummarySidebar h3,
-#circleFocusSummarySidebar h2 {
-    cursor: pointer;
-}
-
-#circleFocusCompDetailsLink i {
-    margin-top: .8rem;
-}
-
-#circleFocusSummaryListContainer {
-    margin-top: 1em;
-    max-height: 75%;
-    overflow-y: auto;
-}
-
-#circleFocusRelatedFwListContainer {
-    margin-left: .5em;
-}
-
-#circleFocusSummaryDesc {
-    margin-bottom: .5rem;
-}
-
-#circleFocusCompTools {
-    font-size: 1.2rem;
-    text-align: right;
-}
-.gpsiRootComp {
-    font-size: 1.05rem;
-}
-
-.gpsiNonRootComp {}
-
-.gpsiChild {
-    margin-left: 1.2rem;
-    font-size: 1rem;
-}
-
-.psiItem.active {
-    font-weight: bold;
-    text-decoration: underline;
-}
-
-#fwkShareContactsListHdrContainer {
-    margin: auto;
-    margin-bottom: .1rem;
-    padding: 0;
-    width: 80%;
-}
-
-#fwkShareContactsListHdrContainer ul {
-    margin: 0px;
-}
-
-#fwkShareContactsList {
-    margin: .5rem 0;
-}
-
-#fwkShareContactsListContainer {
-    max-height: 300px;
-    overflow-y: auto;
-    margin: auto;
-    margin-bottom: 1.5rem;
-    width: 80%;
-    border-color: #d9d9d9;
-    border-style: solid;
-    border-radius: 5px;
-    border-width: 1px;
+#gapWelcomeContainer {
+    margin-top: 5%;
 }

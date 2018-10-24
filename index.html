@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CASS Gap Analysis</title>
+    <title>CaSS Gap Analysis</title>
     <link rel="stylesheet" href="css/jquery-ui.min.css">
     <link rel="stylesheet" href="css/foundation.min.css">
     <link rel="stylesheet" href="css/font-awesome.min.css">
@@ -14,9 +14,43 @@
 
 <body>
     <!-- GAP ANALYSIS MENU -->
-    <div class="sticky" data-sticky data-margin-top="0">
-        <div id="section-sub-menu">
-            <div class="grid-container full">
+    <div id="ssmStickyCtr">
+        <div class="sticky" data-sticky data-margin-top="0">
+            <div id="section-sub-menu" style="display: none">
+                <div class="grid-container full">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-10">
+                            <h2 id="gapHeader"><i class="fa fa-users" aria-hidden="true"></i> Gap Analysis</h2>
+                        </div>
+                        <div class="cell medium-2">
+                            <div id="page-tools">
+                                <ul class="dropdown menu" data-dropdown-menu>
+                                    <li>
+                                        <a href="#">Tools</a>
+                                        <ul class="menu vertical">
+                                            <li><a title="View and Adjust Gap Analysis Rules" onclick="openAdjustGapRulesModal();"><i class="fa fa-cogs" aria-hidden="true"></i> View/Adjust Rules</a></li>
+                                            <li><a title="Print Analysis"><i class="fa fa-print" aria-hidden="true"></i> Print</a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid-x grid-padding-x">
+                        <div class="cell medium-8">
+                            <button id="addProfBtn" class="secondary button" onclick="showGraphViewMainContentsScreen();">Add Profile</button>
+                            <button id="addFwkBtn" class="secondary button" onclick="showListViewMainContentsScreen();">Add Framework</button>
+                        </div>
+                        <div class="cell medium-4">
+                            <div id="gapContentsSearchContainer" class="input-group" style="display:none">
+                                <input onkeypress="checkForGapContentsSearchbarEnter(event)" id="gapContentsSearchInput" class="input-group-field" type="text" placeholder="Search these results">
+                                <div class="input-group-button">
+                                    <button class="button"><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -49,11 +83,71 @@
     <!--END ERROR-->
 
     <!--WARNINGS-->
+    <div id="noFrameworksAvailableWarningContainer" class="cassUiHighLevelWarning" style="display: none;">
+        <div class="grid-container">
+            <div class="grid-x grid-padding-x grid-padding-y">
+                <div class="cell medium-12 text-center">
+                    <div class="callout warning large cassUiCallout">
+                        <h4><i class="fa fa-exclamation-triangle"></i>  No Frameworks Available</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!--END WARNINGS-->
+
+    <!--GAP ANALYSIS WELCOME-->
+    <div id="gapWelcomeContainer" style="display: none">
+        <div class="grid-container text-center">
+            <div class="grid-x grid-padding-x grid-padding-y">
+                <div class="cell medium-12">
+                    <h4>Proficiency Analysis</h4>
+                    <p>Analyze personnel gaps in a targeted area of proficiency</p>
+                </div>
+                <div class="cell medium-12">
+                    <button class="button" title="Open Gap Analysis Wizard" onclick="openAddProfileModal();">Begin Analysis</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--END GAP ANALYSIS WELCOME-->
 
     <!--CONTENTS-->
     <div id="cassUiMainContentsContainer" style="display:none">
-        GAP ANALYSIS
+        <div class="grid-container full">
+            <div class="grid-y medium-grid-frame grid-padding-x">
+                <div class="cell medium-auto medium-cell-block-container">
+                    <div class="grid-x grid-padding-x">
+                        <div id="circleFocusSummarySidebar" class="cell medium-4 large-3 medium-cell-block-y">
+                            <h3 id=""><i class="fa fa-id-card-o"></i> Profile Explorer</h3>
+                            <p id="circleFocusSummaryDesc"></p>
+                            <div id="circleFocusSummaryListContainer"></div>
+                        </div>
+                        <div class="cell auto" style="position: relative;">
+                            <div class="gapCircleGraph" id="gap-circle-graph-wrapper">
+                                <svg id="gapCirclePack" width="500" height="500" viewBox="0 0 500 500"></svg>
+                            </div>
+                        </div>
+                        <div id="circleFocusDetailsSidebar" class="cell medium-4 large-3 medium-cell-block-y hide">
+                            <div class="grid-x">
+                                <div class="cell medium-10">
+                                    <h3 id="circleFocusDetailsSingleName"></h3>
+                                </div>
+                                <div id="circleFocusCompTools" class="cell medium-2">
+                                    <i id="circleFocusCompConfIcon" class="fa fa-signal" title="Confidence" aria-hidden="true"></i>&nbsp;
+                                    <a id="circleFocusCompDetailsLink"><i class="fa fa-info-circle" title="Show more details" aria-hidden="true"></i></a>
+                                </div>
+                            </div>
+                            <p id="circleFocusDetailsSingleDesc" class="lead"></p>
+                            <div id="circleFocusDetailsAssertionListContainer"></div>
+                            <div id="circleFocusDetailsRelListContainer">
+                                <ul id="circleFocusDetailsRelList" class="fa-ul"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!--END CONTENTS-->
 

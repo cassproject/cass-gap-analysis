@@ -195,6 +195,12 @@ input:checked~.switch-paddle {
     pointer-events: all;
 }
 
+.gapCircleGraph .gapped {
+    fill:#FA4309 !important;
+    stroke: #999999;
+    stroke-width: 1px;
+}
+
 /* ---- MISC ---- */
 
 .modal-large-multi-select {
@@ -207,4 +213,56 @@ input:checked~.switch-paddle {
 
 #gapWelcomeContainer {
     margin-top: 5%;
+}
+
+#circleFocusDetailsSingleDesc {
+    font-size: .95rem;
+}
+
+#circleFocusDetailsSidebar,
+#circleFocusSummarySidebar {
+    margin-top: 1rem;
+}
+
+#circleFocusSummarySidebar {
+    padding-left: 1.5rem;
+}
+
+#circleFocusSummarySidebar h3,
+#circleFocusSummarySidebar h2 {
+    cursor: pointer;
+}
+
+#circleFocusCompDetailsLink i {
+    margin-top: .8rem;
+}
+
+#circleFocusSummaryListContainer {
+    margin-top: 1em;
+    max-height: 75%;
+    overflow-y: auto;
+}
+
+#circleFocusRelatedFwListContainer {
+    margin-left: .5em;
+}
+
+#circleFocusSummaryDesc {
+    margin-bottom: .5rem;
+}
+
+#circleFocusCompTools {
+    font-size: 1.2rem;
+    text-align: right;
+}
+
+.gpsiRootComp {
+    font-size: 1.05rem;
+}
+
+.gpsiNonRootComp {}
+
+.gpsiChild {
+    margin-left: 1.2rem;
+    font-size: 1rem;
 }

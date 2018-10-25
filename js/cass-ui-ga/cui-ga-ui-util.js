@@ -9,8 +9,7 @@ const DEBUG_CONSOLE = true;
 const DEBUG_ALERT = false;
 
 // Color Themes
-//const FRAMEWORK_EXP_THEME_CLASS = "theme-burgendy";
-//const EXP_CIR_COLOR_RANGE = "burgendy";
+const GAP_CIR_COLOR_RANGE = "blue";
 
 // Various Page Element IDs
 const CASSUI_MAIN_BUSY_CTR = "#cassUiMainBusyContainer";
@@ -39,8 +38,22 @@ const GAP_CONT_SRCH_INPT = "#gapContentsSearchInput";
 
 const GAP_WELCOME_CTR = "#gapWelcomeContainer";
 
+//Circle Focus Detail Summary (left-hand side)/ Sidebar (right-hand side)  Items
+const CIR_FCS_DTL_CTR = "#circleFocusDetailsSidebar";
+const CIR_FCS_DTL_REL_LIST = "#circleFocusDetailsRelList";
+const CIR_FCS_DTL_SING_NAME = "#circleFocusDetailsSingleName";
+const CIR_FCS_DTL_SING_DESC = "#circleFocusDetailsSingleDesc";
+const CIR_FCS_COMP_TOOLS = "#circleFocusCompTools";
+const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
+
+const CIR_FCS_SUM_DESC = "#circleFocusSummaryDesc";
+const CIR_FCS_SUM_LIST_CTR = "#circleFocusSummaryListContainer";
+
+const CIR_FCS_SUM_ITEM_CLASS_ID = "gpsi";
+
 //Warning Containers
 const NO_FRAMEWORKS_AVAILABLE_CTR = "#noFrameworksAvailableWarningContainer";
+const CIRC_DEPEND_WARNING_CTR = "#circularDependencyWarningContainer";
 
 //Add Profiles Modal
 const ADD_PRF_MODAL = "#modal-profile-select";
@@ -93,6 +106,7 @@ function showScreen(newScreen) {
 }
 
 function showPageMainContentsContainer() {
+    hideGapWelcome();
     if (!$(CASSUI_MAIN_CONTENTS_CTR).is(":visible")) {
         $(CASSUI_MAIN_BUSY_CTR).hide();
         $(CASSUI_MAIN_ERR_CTR).hide();
@@ -105,15 +119,18 @@ function hidePageMainContentsContainer() {
 }
 
 function showPageAsBusy(text) {
+    hideGapWelcome();
     $(CASSUI_MAIN_ERR_CTR).hide();
     $(CASSUI_HIGH_LVL_WARNING).hide();
     hidePageMainContentsContainer();
     $(CASSUI_MAIN_BUSY_TXT).html(text);
     $(CASSUI_MAIN_BUSY_CTR).show();
+
 }
 
 function showPageError(text) {
     console.error(text);
+    hideGapWelcome();
     $(CASSUI_MAIN_BUSY_CTR).hide();
     $(CASSUI_HIGH_LVL_WARNING).hide();
     hidePageMainContentsContainer();
@@ -186,6 +203,14 @@ if ( typeof String.prototype.endsWith != 'function' ) {
 // Gap Analysis Page UI Functions
 //**************************************************************************************************
 
+function showCircleSidebarDetails() {
+    $(CIR_FCS_DTL_CTR).removeClass("hide");
+}
+
+function hideCircleSidebarDetails() {
+    $(CIR_FCS_DTL_CTR).addClass("hide");
+}
+
 function setAddFwkResultsDesc(desc) {
     $(ADD_FWK_RES_DESC).html(desc);
 }
@@ -205,10 +230,19 @@ function showMainMenu() {
 }
 
 function showNoFrameworksAvailableWarning() {
+    hideGapWelcome();
     $(CASSUI_MAIN_BUSY_CTR).hide();
     $(CASSUI_MAIN_ERR_CTR).hide();
     $(CASSUI_HIGH_LVL_WARNING).hide();
     $(NO_FRAMEWORKS_AVAILABLE_CTR).show();
+}
+
+function showFrameworkHasCircularDependencyWarning() {
+    hideGapWelcome();
+    $(CASSUI_MAIN_BUSY_CTR).hide();
+    $(CASSUI_MAIN_ERR_CTR).hide();
+    $(CASSUI_HIGH_LVL_WARNING).hide();
+    $(CIRC_DEPEND_WARNING_CTR).show();
 }
 
 function disableAddItemButtons() {

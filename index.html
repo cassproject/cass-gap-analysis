@@ -38,8 +38,8 @@
                     </div>
                     <div class="grid-x grid-padding-x">
                         <div class="cell medium-8">
-                            <button id="addProfBtn" class="secondary button" onclick="showGraphViewMainContentsScreen();">Add Profile</button>
-                            <button id="addFwkBtn" class="secondary button" onclick="showListViewMainContentsScreen();">Add Framework</button>
+                            <button id="addProfBtn" class="secondary button" onclick="openAddProfileModal();">Select Profiles</button>
+                            <button id="addFwkBtn" class="secondary button" onclick="openAddFrameworkModal();">Select Framework</button>
                         </div>
                         <div class="cell medium-4">
                             <div id="gapContentsSearchContainer" class="input-group" style="display:none">
@@ -94,6 +94,20 @@
             </div>
         </div>
     </div>
+
+    <div id="circularDependencyWarningContainer" class="cassUiHighLevelWarning" style="display: none;">
+        <div class="grid-container">
+            <div class="grid-x grid-padding-x grid-padding-y">
+                <div class="cell medium-12 text-center">
+                    <div class="callout warning large cassUiCallout">
+                        <h4><i class="fa fa-exclamation-triangle"></i>  Circular Dependency Detected</h4>
+                        <p>The selected framework contains at least one circular dependency and cannot be displayed</p>
+                        <p><a onclick="openAddFrameworkModal()">Try a Different Framework?</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!--END WARNINGS-->
 
     <!--GAP ANALYSIS WELCOME-->
@@ -101,7 +115,7 @@
         <div class="grid-container text-center">
             <div class="grid-x grid-padding-x grid-padding-y">
                 <div class="cell medium-12">
-                    <h4>Proficiency Analysis</h4>
+                    <h4>Proficiency Gap Analysis</h4>
                     <p>Analyze personnel gaps in a targeted area of proficiency</p>
                 </div>
                 <div class="cell medium-12">
@@ -119,7 +133,7 @@
                 <div class="cell medium-auto medium-cell-block-container">
                     <div class="grid-x grid-padding-x">
                         <div id="circleFocusSummarySidebar" class="cell medium-4 large-3 medium-cell-block-y">
-                            <h3 id=""><i class="fa fa-id-card-o"></i> Profile Explorer</h3>
+                            <h3 id=""><i class="fa fa-id-card-o"></i> Gap Analysis</h3>
                             <p id="circleFocusSummaryDesc"></p>
                             <div id="circleFocusSummaryListContainer"></div>
                         </div>
@@ -203,7 +217,7 @@
 
 
     <div class="reveal large" id="modal-framework-select" data-reveal>
-        <h3><i class="fa fa-sitemap" aria-hidden="true"></i> Framework Selection</h3>
+        <h3><i class="fa fa-sitemap" aria-hidden="true"></i> Select a Framework</h3>
         <div class="grid-x grid-padding-x">
             <div class="cell medium-6">
                 <select id="addFwkFilterTypeSelect" onchange="changeAddFwkFilterType()">
@@ -216,11 +230,11 @@
             </div>
             <div class="cell medium-12">
                 <label><span id="addFwkResultsDesc"></span>
-                    <select class="modal-large-multi-select" id="addFwkResultsSelect" multiple></select>
+                    <select class="modal-large-multi-select" id="addFwkResultsSelect" size="20"></select>
                 </label>
             </div>
             <div class="cell medium-12">
-                <button class="button cassUiModalButton" onclick="addSelectedFrameworks();">Add</button>
+                <button class="button cassUiModalButton" onclick="addSelectedFrameworks();">Select</button>
                 &nbsp;&nbsp;
                 <button class="button secondary cassUiModalButton" data-close>Cancel</button>
             </div>

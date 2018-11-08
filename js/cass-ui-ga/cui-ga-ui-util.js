@@ -46,9 +46,11 @@ const CIR_FCS_DTL_SING_DESC = "#circleFocusDetailsSingleDesc";
 const CIR_FCS_COMP_TOOLS = "#circleFocusCompTools";
 const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
 
-const CIR_FCS_SUM_DESC = "#circleFocusSummaryDesc";
-const CIR_FCS_SUM_LIST_CTR = "#circleFocusSummaryListContainer";
-
+const CIR_FCS_SUM_HDR = "#circleFocusSummaryHeader";
+const CIR_FCS_SUM_SEL_PROF_LIST = "#circleFocusSummarySelProfList";
+const CIR_FCS_SUM_NUM_COMPS = "#circleFocusSummaryNumComps";
+const CIR_FCS_SUM_COV = "#circleFocusSummaryCoverage";
+const CIR_FCS_SUM_COMP_LIST_CTR = "#circleFocusSummaryCompListCtr";
 const CIR_FCS_SUM_ITEM_CLASS_ID = "gpsi";
 
 //Warning Containers
@@ -199,9 +201,25 @@ if ( typeof String.prototype.endsWith != 'function' ) {
     }
 };
 
+function generatePercentFromNumber(n) {
+    if (n) {
+        if (n == 0) return "0%";
+        else {
+            var tp = Math.round(n * 100);
+            return tp + "%";
+        }
+    }
+    else return "0%";
+
+}
+
 //**************************************************************************************************
 // Gap Analysis Page UI Functions
 //**************************************************************************************************
+
+function setCircleFocusSummaryHeader(desc) {
+    $(CIR_FCS_SUM_HDR).html(desc);
+}
 
 function showCircleSidebarDetails() {
     $(CIR_FCS_DTL_CTR).removeClass("hide");

@@ -133,9 +133,26 @@
                 <div class="cell medium-auto medium-cell-block-container">
                     <div class="grid-x grid-padding-x">
                         <div id="circleFocusSummarySidebar" class="cell medium-4 large-3 medium-cell-block-y">
-                            <h3 id=""><i class="fa fa-id-card-o"></i> Gap Analysis</h3>
-                            <p id="circleFocusSummaryDesc"></p>
-                            <div id="circleFocusSummaryListContainer"></div>
+                            <h4 id=""><i class="fa fa-pie-chart"></i> <span id="circleFocusSummaryHeader"></span></h4>
+                            <div class="circleFocusSummarySection">
+                                <h5>Selected Profiles</h5>
+                                <div class="circleFocusSummarySubSection">
+                                    <ul class="no-bullets" id="circleFocusSummarySelProfList"></ul>
+                                </div>
+                            </div>
+                            <div class="circleFocusSummarySection">
+                                <h5>Overview</h5>
+                                <div class="grid-x circleFocusSummarySubSection">
+                                    <div class="cell small-4"><strong>Subject Areas:</strong></div>
+                                    <div class="cell small-8"><span class="circleFocusSummaryOverviewField" id="circleFocusSummaryNumComps"></span></div>
+                                    <div class="cell small-4"><strong>Coverage:</strong></div>
+                                    <div class="cell small-8"><span class="circleFocusSummaryOverviewField" id="circleFocusSummaryCoverage"></span></div>
+                                </div>
+                            </div>
+                            <div class="circleFocusSummarySection">
+                                <h5>Detailed Coverage</h5>
+                                <div id="circleFocusSummaryCompListCtr" class="circleFocusSummarySubSection"></div>
+                            </div>
                         </div>
                         <div class="cell auto" style="position: relative;">
                             <div class="gapCircleGraph" id="gap-circle-graph-wrapper">

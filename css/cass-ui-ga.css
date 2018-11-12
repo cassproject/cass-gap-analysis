@@ -216,7 +216,7 @@ input:checked~.switch-paddle {
 }
 
 .gapSummaryCompCov,
-.circleFocusSummaryOverviewField,
+.circleFocusOverviewField,
 #circleFocusSummarySelProfList li {
     color: #818181;
 }
@@ -256,8 +256,9 @@ input:checked~.switch-paddle {
     overflow-y: auto;
 }
 
-#circleFocusRelatedFwListContainer {
-    margin-left: .5em;
+#circleFocusDetailsProfListContainer ul {
+    list-style: none;
+    margin-bottom: 0;
 }
 
 #circleFocusSummaryDesc {

@@ -8,6 +8,8 @@
 //TODO multi-node competency clusters....
 //TODO addChildToGapSummaryCompList construct list view for multi node competency cluster
 //TODO getNumberOfProfilesWithAssertedCompetency adjust for multi-node clusters
+//TODO getProfilesWithAssertedCompetency adjust for multi-node clusters
+//TODO getAssertionsForD3Node fix for multi node clusters
 
 //TODO toggleGapSummaryCompChild figure out bug with this (same with Framework Explorer)
 
@@ -63,14 +65,6 @@ var numCompsWithoutCoverage;
 // Utility Functions
 //**************************************************************************************************
 
-//TODO checkForGapContentsSearchbarEnter
-function checkForGapContentsSearchbarEnter(event) {
-    // if (event.which == 13 || event.keyCode == 13) {
-    //     $(FWK_CONT_SRCH_INPT).autocomplete("close");
-    //     findItemByFrameworkContentsSearchBar($(FWK_CONT_SRCH_INPT).val().trim());
-    // }
-}
-
 function initializeSelectedDataPoints() {
     selectedProfiles = [];
     selectedFramework = null;
@@ -123,6 +117,52 @@ function generateNumberOfCompetenciesWithoutCoverage() {
     countNumberOfCompetenciesWithoutCoverage(currentD3FrameworkNode.children);
 }
 
+function getAssertionsForCompetency(compId) {
+    if (competencyAssertionMap[compId]) return competencyAssertionMap[compId];
+    else return [];
+}
+
+//TODO getAssertionsForD3Node fix for multi node clusters
+function getAssertionsForD3Node(d3Node) {
+    if (d3Node && d3Node.data) evidenceTrail.push(d3Node.data.name.trim());
+    var d3nt = profileCompetencyData.competencyD3NodeTrackerMap[d3Node.data.name.trim()];
+    var asArray = getAssertionsForCompetency(d3nt.id);
+    if (!asArray || asArray == null || asArray.length == 0) {
+        if (!d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return null;
+        else return getAssertionsForD3Node(d3nt.d3Node.parent);
+    }
+    else return asArray;
+}
+
+function getAssertionsForCompetencyPacketData(cpd) {
+    var asArray = getAssertionsForCompetency(cpd.id);
+    if (!asArray || asArray == null || asArray.length == 0) {
+        var d3nt = selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[cpd.id];
+        if (!d3nt || !d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return null;
+        else return getAssertionsForD3Node(d3nt.d3Node.parent);
+    }
+    else return asArray;
+}
+
+//TODO getProfilesWithAssertedCompetency adjust for multi-node clusters
+function getProfilesWithAssertedCompetency(compId) {
+    var compAsrs = competencyAssertionMap[compId];
+    if (!compAsrs || compAsrs.length == 0) return 0;
+    var profs = [];
+    for (var prof in profileAssertionsMap) {
+        if (profileAssertionsMap.hasOwnProperty(prof)) {
+            var profAsrs = profileAssertionsMap[prof];
+            for (var j=0;j<profAsrs.length;j++) {
+                if (profAsrs[j].competency == compId) {
+                    profs.push(prof);
+                    break;
+                }
+            }
+        }
+    }
+    return profs;
+}
+
 //TODO getNumberOfProfilesWithAssertedCompetency adjust for multi-node clusters
 function getNumberOfProfilesWithAssertedCompetency(compId) {
     var compAsrs = competencyAssertionMap[compId];
@@ -142,6 +182,12 @@ function getNumberOfProfilesWithAssertedCompetency(compId) {
     return numProfs;
 }
 
+function checkForGapContentsSearchbarEnter(event) {
+    if (event.which == 13 || event.keyCode == 13) {
+        $(GAP_CONT_SRCH_INPT).autocomplete("close");
+        findItemByGapContentsSearchBar($(GAP_CONT_SRCH_INPT).val().trim());
+    }
+}
 
 //**************************************************************************************************
 // Adjust Gap Rules Modal
@@ -329,6 +375,20 @@ function getGapCgCircleText(d) {
 // Graph View Sidebar (Right-Hand Side)
 //**************************************************************************************************
 
+function buildSidebarDetailsProfileList(cpd) {
+    var profs = getProfilesWithAssertedCompetency(cpd.id);
+    if (!profs || profs.length == 0) $(CIR_FCS_DTL_PROF_LIST_CTR).hide();
+    else {
+        $(CIR_FCS_DTL_PROF_LIST).empty();
+        for (var i=0;i<profs.length;i++) {
+            var pli = $("</li>");
+            pli.html("<span class=\"circleFocusOverviewField\">" +  + "</span>");
+            $(CIR_FCS_DTL_PROF_LIST).append(pli);
+        }
+        $(CIR_FCS_DTL_PROF_LIST_CTR).show();
+    }
+}
+
 //TODO showCircleGraphSidebarDetails handle multi node packets
 function showCircleGraphSidebarDetails(compId) {
     hideCircleSidebarDetails();
@@ -341,7 +401,8 @@ function showCircleGraphSidebarDetails(compId) {
         if (!cpd || cpd == null) debugMessage("Cannot locate competency data for: " + compId);
         else {
             $(CIR_FCS_DTL_SING_NAME).html(cpd.name);
-            $(CIR_FCS_DTL_SING_DESC).html("TODO fill in");
+            $(CIR_FCS_DTL_SING_DESC).html(cpd.description);
+            buildSidebarDetailsProfileList(cpd);
             showCircleSidebarDetails();
         }
     }
@@ -447,6 +508,35 @@ function buildGraphProfileSummary() {
     buildGapSummaryCompetencyList();
 }
 
+//**************************************************************************************************
+// Gap Contents Search Auto Complete
+//**************************************************************************************************
+
+function findItemByGapContentsSearchBar(selectedValue) {
+    if (competencySearchAutoCompleteMap.hasOwnProperty(selectedValue)) {
+        zoomGapCircleGraphByAutoComplete(selectedValue);
+    }
+}
+
+function buildGapContentsSearchAutoCompleteDataFromAutoCompleteMap() {
+    var data = [];
+    for (var property in competencySearchAutoCompleteMap) {
+        if (competencySearchAutoCompleteMap.hasOwnProperty(property)) {
+            if (property != "Framework not found") data.push(property);
+        }
+    }
+    return data;
+}
+
+function fillInGapContentsSearchAutoComplete() {
+    $(GAP_CONT_SRCH_INPT).autocomplete({
+        source: buildGapContentsSearchAutoCompleteDataFromAutoCompleteMap(),
+        select: function (event, ui) {
+            findItemByGapContentsSearchBar(ui.item.label);
+        }
+    });
+}
+
 
 //**************************************************************************************************
 // Gap Analysis Display
@@ -460,7 +550,7 @@ function buildGapAnalysisDisplays() {
     buildGraphProfileSummary();
     hideCircleSidebarDetails();
     showPageMainContentsContainer();
-    //fillInFrameworkContentsSearchAutoComplete(); //TODO DO THIS
+    fillInGapContentsSearchAutoComplete();
     $(GAP_CONT_SRCH_INPT).val("");
     showGapContentsSearchBar();
     enableAddItemButtons();

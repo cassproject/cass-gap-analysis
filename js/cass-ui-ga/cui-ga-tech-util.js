@@ -8,6 +8,7 @@
 function competencyPacketData(cassNodePacket) {
     this.id = generateIdFromCassNodePacket(cassNodePacket);
     this.name = generateNameFromCassNodePacket(cassNodePacket);
+    this.description = generateDescriptionFromCassNodePacket(cassNodePacket);
     this.cassNodePacket = cassNodePacket;
     this.parents = [];
     this.children = [];

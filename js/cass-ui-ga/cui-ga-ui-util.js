@@ -40,11 +40,12 @@ const GAP_WELCOME_CTR = "#gapWelcomeContainer";
 
 //Circle Focus Detail Summary (left-hand side)/ Sidebar (right-hand side)  Items
 const CIR_FCS_DTL_CTR = "#circleFocusDetailsSidebar";
-const CIR_FCS_DTL_REL_LIST = "#circleFocusDetailsRelList";
 const CIR_FCS_DTL_SING_NAME = "#circleFocusDetailsSingleName";
 const CIR_FCS_DTL_SING_DESC = "#circleFocusDetailsSingleDesc";
-const CIR_FCS_COMP_TOOLS = "#circleFocusCompTools";
-const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
+const CIR_FCS_DTL_PROF_LIST_CTR = "#circleFocusDetailsProfListContainer";
+const CIR_FCS_DTL_PROF_LIST = "#circleFocusDetailsProfList";
+// const CIR_FCS_COMP_TOOLS = "#circleFocusCompTools";
+// const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
 
 const CIR_FCS_SUM_HDR = "#circleFocusSummaryHeader";
 const CIR_FCS_SUM_SEL_PROF_LIST = "#circleFocusSummarySelProfList";
@@ -299,6 +300,10 @@ function showGapWelcome() {
     $(CASSUI_MAIN_ERR_CTR).hide();
     $(CASSUI_MAIN_CONTENTS_CTR).hide();
     $(GAP_WELCOME_CTR).show();
+}
+
+function clearAllSearchBars() {
+    $(GAP_CONT_SRCH_INPT).val("");
 }
 
 //**************************************************************************************************

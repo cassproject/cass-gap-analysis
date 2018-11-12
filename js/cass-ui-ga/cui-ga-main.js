@@ -7,9 +7,9 @@
 
 //TODO multi-node competency clusters....
 //TODO addChildToGapSummaryCompList construct list view for multi node competency cluster
-//TODO getNumberOfProfilesWithAssertedCompetency adjust for multi-node clusters
-//TODO getProfilesWithAssertedCompetency adjust for multi-node clusters
-//TODO getAssertionsForD3Node fix for multi node clusters
+//TODO getNumberOfProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
+//TODO getProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
+//TODO getAssertionsForD3NodeInclusive fix for multi node clusters
 
 //TODO toggleGapSummaryCompChild figure out bug with this (same with Framework Explorer)
 
@@ -122,64 +122,52 @@ function getAssertionsForCompetency(compId) {
     else return [];
 }
 
-//TODO getAssertionsForD3Node fix for multi node clusters
-function getAssertionsForD3Node(d3Node) {
-    if (d3Node && d3Node.data) evidenceTrail.push(d3Node.data.name.trim());
-    var d3nt = profileCompetencyData.competencyD3NodeTrackerMap[d3Node.data.name.trim()];
+//TODO getAssertionsForD3NodeInclusive fix for multi node clusters
+function getAssertionsForD3NodeInclusive(d3Node) {
+    var d3nt = selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[d3Node.data.name.trim()];
     var asArray = getAssertionsForCompetency(d3nt.id);
-    if (!asArray || asArray == null || asArray.length == 0) {
-        if (!d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return null;
-        else return getAssertionsForD3Node(d3nt.d3Node.parent);
-    }
-    else return asArray;
+    if (!d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return asArray;
+    else return asArray.concat(getAssertionsForD3NodeInclusive(d3nt.d3Node.parent));
 }
 
-function getAssertionsForCompetencyPacketData(cpd) {
+function getAssertionsForCompetencyPacketDataInclusive(cpd) {
     var asArray = getAssertionsForCompetency(cpd.id);
-    if (!asArray || asArray == null || asArray.length == 0) {
-        var d3nt = selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[cpd.id];
-        if (!d3nt || !d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return null;
-        else return getAssertionsForD3Node(d3nt.d3Node.parent);
-    }
-    else return asArray;
+    var d3nt = selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[cpd.id];
+    if (!d3nt || !d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return asArray;
+    else return asArray.concat(getAssertionsForD3NodeInclusive(d3nt.d3Node.parent));
 }
 
-//TODO getProfilesWithAssertedCompetency adjust for multi-node clusters
-function getProfilesWithAssertedCompetency(compId) {
-    var compAsrs = competencyAssertionMap[compId];
-    if (!compAsrs || compAsrs.length == 0) return 0;
-    var profs = [];
-    for (var prof in profileAssertionsMap) {
-        if (profileAssertionsMap.hasOwnProperty(prof)) {
-            var profAsrs = profileAssertionsMap[prof];
-            for (var j=0;j<profAsrs.length;j++) {
-                if (profAsrs[j].competency == compId) {
-                    profs.push(prof);
-                    break;
-                }
-            }
+function getUniqueProfilesForAssertions(asArray) {
+    var upo = {};
+    for (var i=0;i<asArray.length;i++) {
+        var sp = asArray[i].getSubject().toPem();
+        if (selectedProfiles.includes(sp)) {
+            upo[sp] = sp;
         }
     }
-    return profs;
+    var upoa = [];
+    for (var prof in upo) {
+        if (upo.hasOwnProperty(prof)) upoa.push(prof);
+    }
+    return upoa;
 }
 
-//TODO getNumberOfProfilesWithAssertedCompetency adjust for multi-node clusters
-function getNumberOfProfilesWithAssertedCompetency(compId) {
-    var compAsrs = competencyAssertionMap[compId];
-    if (!compAsrs || compAsrs.length == 0) return 0;
-    var numProfs = 0;
-    for (var prof in profileAssertionsMap) {
-        if (profileAssertionsMap.hasOwnProperty(prof)) {
-            var profAsrs = profileAssertionsMap[prof];
-            for (var j=0;j<profAsrs.length;j++) {
-                if (profAsrs[j].competency == compId) {
-                    numProfs++;
-                    break;
-                }
-            }
-        }
+//TODO getProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
+function getProfilesWithAssertedCompetencyAndParents(compId) {
+    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+    if (!cpd) return [];
+    else {
+        var asArray =  getAssertionsForCompetencyPacketDataInclusive(cpd);
+        if (!asArray || asArray.length == 0) return [];
+        else return getUniqueProfilesForAssertions(asArray);
     }
-    return numProfs;
+}
+
+//TODO getNumberOfProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
+function getNumberOfProfilesWithAssertedCompetencyAndParents(compId) {
+    var cpa = getProfilesWithAssertedCompetencyAndParents(compId);
+    if (cpa) return cpa.length;
+    else return 0;
 }
 
 function checkForGapContentsSearchbarEnter(event) {
@@ -375,14 +363,24 @@ function getGapCgCircleText(d) {
 // Graph View Sidebar (Right-Hand Side)
 //**************************************************************************************************
 
+function buildSidebarDetailsProfileDisplayNameList(profPemList) {
+    var dna = [];
+    for (var i=0;i<profPemList.length;i++) {
+        dna.push(contactsByPkPemMap[profPemList[i]].displayName);
+    }
+    dna.sort();
+    return dna;
+}
+
 function buildSidebarDetailsProfileList(cpd) {
-    var profs = getProfilesWithAssertedCompetency(cpd.id);
+    var profs = getProfilesWithAssertedCompetencyAndParents(cpd.id);
     if (!profs || profs.length == 0) $(CIR_FCS_DTL_PROF_LIST_CTR).hide();
     else {
         $(CIR_FCS_DTL_PROF_LIST).empty();
-        for (var i=0;i<profs.length;i++) {
-            var pli = $("</li>");
-            pli.html("<span class=\"circleFocusOverviewField\">" +  + "</span>");
+        var dna = buildSidebarDetailsProfileDisplayNameList(profs);
+        for (var i=0;i<dna.length;i++) {
+            var pli = $("<li/>");
+            pli.html("<span class=\"circleFocusOverviewField\">" + dna[i] + "</span>");
             $(CIR_FCS_DTL_PROF_LIST).append(pli);
         }
         $(CIR_FCS_DTL_PROF_LIST_CTR).show();
@@ -435,7 +433,7 @@ function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildr
     else {
         liHtml += "<i class=\"fa fa-circle " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i>";
     }
-    var numberOfProfsWithComp = getNumberOfProfilesWithAssertedCompetency(compNode.getId());
+    var numberOfProfsWithComp = getNumberOfProfilesWithAssertedCompetencyAndParents(compNode.getId());
     liHtml += "&nbsp;&nbsp;<a class=\"psiItem\" id=\"" + buildGapSummaryCompItemElementId(compNode) + "\" " +
         "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(compNode.getId().trim()) + "',true)\">" +
         compNode.getName().trim() + " <span class=\"gapSummaryCompCov\">" +

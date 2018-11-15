@@ -10,6 +10,7 @@
 //TODO getNumberOfProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
 //TODO getProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
 //TODO getAssertionsForD3NodeInclusive fix for multi node clusters
+//TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 
 //TODO toggleGapSummaryCompChild figure out bug with this (same with Framework Explorer)
 
@@ -59,8 +60,6 @@ var selectedFrameworkNodePacketGraph;
 var currentD3FrameworkNode;
 var currentD3FrameworkNodeString;
 
-var numCompsWithoutCoverage;
-
 //**************************************************************************************************
 // Utility Functions
 //**************************************************************************************************
@@ -102,19 +101,8 @@ function getCompetencyD3NodeTracker(trackerId) {
     else return null;
 }
 
-function countNumberOfCompetenciesWithoutCoverage(cpdArray) {
-    for (var i=0;i<cpdArray.length;i++) {
-        var cpd = cpdArray[i];
-        if (!cpd.hasAssertion) {
-            numCompsWithoutCoverage++;
-            countNumberOfCompetenciesWithoutCoverage(cpd.children);
-        }
-    }
-}
-
-function generateNumberOfCompetenciesWithoutCoverage() {
-    numCompsWithoutCoverage = 0;
-    countNumberOfCompetenciesWithoutCoverage(currentD3FrameworkNode.children);
+function countTotalNumberOfCompetenciesWithoutCoverage() {
+    return countNumberOfCpdChildrenWithoutCoverage(currentD3FrameworkNode.children);
 }
 
 function getAssertionsForCompetency(compId) {
@@ -142,14 +130,11 @@ function getUniqueProfilesForAssertions(asArray) {
     for (var i=0;i<asArray.length;i++) {
         var sp = asArray[i].getSubject().toPem();
         if (selectedProfiles.includes(sp)) {
-            upo[sp] = sp;
+            if (!upo[sp]) upo[sp] = [];
+            upo[sp].push(asArray[i]);
         }
     }
-    var upoa = [];
-    for (var prof in upo) {
-        if (upo.hasOwnProperty(prof)) upoa.push(prof);
-    }
-    return upoa;
+    return upo;
 }
 
 //TODO getProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
@@ -165,9 +150,48 @@ function getProfilesWithAssertedCompetencyAndParents(compId) {
 
 //TODO getNumberOfProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
 function getNumberOfProfilesWithAssertedCompetencyAndParents(compId) {
-    var cpa = getProfilesWithAssertedCompetencyAndParents(compId);
-    if (cpa) return cpa.length;
+    var cpo = getProfilesWithAssertedCompetencyAndParents(compId);
+    if (cpo) return Object.keys(cpo).length;
     else return 0;
+}
+
+function countNumberOfCpdChildrenWithoutCoverage(cpdArray) {
+    var numCompsWoCoverage = 0;
+    for (var i=0;i<cpdArray.length;i++) {
+        var cpd = cpdArray[i];
+        if (!cpd.hasAssertion) {
+            numCompsWoCoverage++;
+            numCompsWoCoverage += countNumberOfCpdChildrenWithoutCoverage(cpd.children);
+        }
+    }
+    return numCompsWoCoverage;
+}
+
+function countNumberOfCompetenciesWithoutCoverage(compId) {
+    var numCompsWoCoverage = 0;
+    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+    if (cpd.hasAssertion) return 0;
+    else {
+        numCompsWoCoverage++;
+        numCompsWoCoverage += countNumberOfCpdChildrenWithoutCoverage(cpd.children);
+    }
+    return numCompsWoCoverage;
+}
+
+function countNumberOfCpdDescendants(cpdArray) {
+    var numDesc = cpdArray.length;
+    for (var i=0;i<cpdArray.length;i++) {
+        var cpd = cpdArray[i];
+        numDesc += countNumberOfCpdDescendants(cpd.children);
+    }
+    return numDesc;
+}
+
+//TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
+function getNumberOfCompetencyDescendants(compId) {
+    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+    if (cpd) return countNumberOfCpdDescendants(cpd.children);
+    return 0;
 }
 
 function checkForGapContentsSearchbarEnter(event) {
@@ -363,10 +387,12 @@ function getGapCgCircleText(d) {
 // Graph View Sidebar (Right-Hand Side)
 //**************************************************************************************************
 
-function buildSidebarDetailsProfileDisplayNameList(profPemList) {
+function buildSidebarDetailsProfileDisplayNameList(profObj) {
     var dna = [];
-    for (var i=0;i<profPemList.length;i++) {
-        dna.push(contactsByPkPemMap[profPemList[i]].displayName);
+    for (var pem in profObj) {
+        if (profObj.hasOwnProperty(pem)) {
+            dna.push(contactsByPkPemMap[pem].displayName);
+        }
     }
     dna.sort();
     return dna;
@@ -392,7 +418,7 @@ function showCircleGraphSidebarDetails(compId) {
     hideCircleSidebarDetails();
     if (!compId || compId == null) return;
     else if (compId == selectedFramework.getName()) {
-        //removeAllGraphViewSummaryHighLighting();
+        removeAllGapSummaryHighLighting();
     }
     else {
         var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
@@ -402,6 +428,8 @@ function showCircleGraphSidebarDetails(compId) {
             $(CIR_FCS_DTL_SING_DESC).html(cpd.description);
             buildSidebarDetailsProfileList(cpd);
             showCircleSidebarDetails();
+            var compNode = cpd.cassNodePacket.getNodeList()[0];
+            scrollCompNodeInGapSummary(compNode);
         }
     }
 }
@@ -409,6 +437,40 @@ function showCircleGraphSidebarDetails(compId) {
 //**************************************************************************************************
 // Graph View Summary (Left-Hand Side)
 //**************************************************************************************************
+
+function expandGapSummaryToObject(expObj) {
+    if (expObj.hasClass("gpsiChild")) {
+        expObj.attr("style", "display:block");
+        if (expObj.parent().children().eq(0) && expObj.parent().children().eq(0).find("i:first")) {
+            var ic = expObj.parent().children().eq(0).find("i:first");
+            if (ic && (ic.hasClass("fa-chevron-circle-down") || ic.hasClass("fa-chevron-circle-right"))) {
+                ic.attr("class", "fa fa-chevron-circle-down");
+            }
+        }
+        if (expObj.parent() && expObj.parent().parent()) {
+            expandGapSummaryToObject(expObj.parent().parent());
+        }
+    }
+}
+
+function removeAllGapSummaryHighLighting() {
+    $(".psiItem.active").removeClass("active");
+}
+
+function expandGapSummaryToCompNode(compNode) {
+    var obj = $("#" + buildGapSummaryCompItemElementId(compNode));
+    removeAllGapSummaryHighLighting();
+    obj.addClass("active");
+    var objPP = obj.parent().parent();
+    expandGapSummaryToObject(objPP);
+}
+
+function scrollCompNodeInGapSummary(compNode) {
+    if ($("#" + buildGapSummaryCompItemElementId(compNode)).length > 0) {
+        expandGapSummaryToCompNode(compNode);
+        $(CIR_FCS_DTL_PROF_LIST).scrollTo("#" + buildGapSummaryCompItemElementId(compNode), 500);
+    }
+}
 
 function buildGapSummaryCompItemElementId(compNode) {
     return buildIDableString(compNode.getId().trim()) + "_psi";
@@ -425,6 +487,22 @@ function toggleGapSummaryCompChild(ce) {
     }
 }
 
+function generateCompetencyLineItemHtmlGapSummaryCoverageText(compNode) {
+    var numberOfProfsWithComp = getNumberOfProfilesWithAssertedCompetencyAndParents(compNode.getId());
+    var numberOfCompsRepresented = getNumberOfCompetencyDescendants(compNode.getId()) +  1;
+    var numberOfCompsWithoutCoverage;
+    if (numberOfProfsWithComp > 0) numberOfCompsWithoutCoverage = 0;
+    else numberOfCompsWithoutCoverage = countNumberOfCompetenciesWithoutCoverage(compNode.getId());
+    var numberOfCompsCovered = numberOfCompsRepresented - numberOfCompsWithoutCoverage;
+    var cto = {};
+    cto["title"] = "This specific area is covered by " + numberOfProfsWithComp + " of the " + selectedProfiles.length + " selected profiles.  " +
+        numberOfCompsCovered + " of the " + numberOfCompsRepresented + " areas in this category are covered.";
+    cto["details"] = "<span class=\"gapSummaryCompCov\"><i class=\"fa fa-users\"></i> " +
+        numberOfProfsWithComp + "/" + selectedProfiles.length +
+        "&nbsp;&nbsp;<i class=\"fa fa-book\"></i> " + numberOfCompsCovered + "/" + numberOfCompsRepresented + " </span>";
+    return cto;
+}
+
 function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildren) {
     var liHtml = "";
     if (hasChildren) {
@@ -433,12 +511,10 @@ function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildr
     else {
         liHtml += "<i class=\"fa fa-circle " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i>";
     }
-    var numberOfProfsWithComp = getNumberOfProfilesWithAssertedCompetencyAndParents(compNode.getId());
-    liHtml += "&nbsp;&nbsp;<a class=\"psiItem\" id=\"" + buildGapSummaryCompItemElementId(compNode) + "\" " +
+    var cto = generateCompetencyLineItemHtmlGapSummaryCoverageText(compNode);
+    liHtml += "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildGapSummaryCompItemElementId(compNode) + "\" " +
         "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(compNode.getId().trim()) + "',true)\">" +
-        compNode.getName().trim() + " <span class=\"gapSummaryCompCov\">" +
-        numberOfProfsWithComp + "/" + selectedProfiles.length + " (" +
-        generatePercentFromNumber(numberOfProfsWithComp/selectedProfiles.length) + ") </span></a>";
+        compNode.getName().trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
     return liHtml;
 }
 
@@ -486,7 +562,7 @@ function buildGapSummaryCompetencyList() {
 function buildGapSummaryOverview() {
     var numberOfComps = Object.keys(selectedFrameworkCompetencyData.competencyPacketDataMap).length;
     $(CIR_FCS_SUM_NUM_COMPS).html(numberOfComps);
-    generateNumberOfCompetenciesWithoutCoverage();
+    var numCompsWithoutCoverage = countTotalNumberOfCompetenciesWithoutCoverage();
     var numberOfCompsCovered = (numberOfComps - numCompsWithoutCoverage);
     $(CIR_FCS_SUM_COV).html(numberOfCompsCovered + "/" + numberOfComps + " (" + generatePercentFromNumber(numberOfCompsCovered/numberOfComps) + ")");
 }
@@ -665,7 +741,7 @@ function processRelevantAssertions() {
         showPageAsBusy("Processing assertions (step 1 of 3)...");
         sortAssertionList();
         debugMessage(assertionList);
-        buildAssertionMaps();    
+        buildAssertionMaps();
     }
     haveSelectedProfilesBeenProcessed = true;
     if (!hasSelectedFrameworkBeenProcessed) collapseSelectedFramework();

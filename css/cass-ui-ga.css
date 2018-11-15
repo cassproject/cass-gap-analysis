@@ -215,6 +215,10 @@ input:checked~.switch-paddle {
     margin-top: 5%;
 }
 
+.gapSummaryCompCov {
+    font-size:.85rem;
+}
+
 .gapSummaryCompCov,
 .circleFocusOverviewField,
 #circleFocusSummarySelProfList li {
@@ -279,4 +283,9 @@ input:checked~.switch-paddle {
 .gpsiChild {
     margin-left: 1.2rem;
     font-size: 1rem;
+}
+
+.psiItem.active {
+    font-weight: bold;
+    text-decoration: underline;
 }

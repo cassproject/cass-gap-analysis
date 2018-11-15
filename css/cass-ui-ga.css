@@ -225,6 +225,11 @@ input:checked~.switch-paddle {
     color: #818181;
 }
 
+.circleFocusDetailAssertion {
+    font-size:.85rem;
+    color: #137499;
+}
+
 .circleFocusSummarySubSection {
     margin-left:1rem;
 }

@@ -391,11 +391,27 @@ function buildSidebarDetailsProfileDisplayNameList(profObj) {
     var dna = [];
     for (var pem in profObj) {
         if (profObj.hasOwnProperty(pem)) {
-            dna.push(contactsByPkPemMap[pem].displayName);
+            var po = {};
+            po.name = contactsByPkPemMap[pem].displayName;
+            po.asrs = profObj[pem];
+            dna.push(po);
         }
     }
-    dna.sort();
+    dna.sort(function(a, b) {return a.name.localeCompare(b.name);})
     return dna;
+}
+
+function buildSidebarDetailsProfileAssertionList(asrList) {
+    var aul = $("<ul/>");
+    for (var i=0;i<asrList.length;i++) {
+        var ali = $("<li/>");
+        ali.addClass("circleFocusDetailAssertion");
+        var aliHtml = "<i class=\"fa fa-circle\" aria-hidden=\"true\"></i> holds <strong>" +
+            getCompetencyName(asrList[i].competency) + "</strong> from <i>" + asrList[i].getAgentName() + "</i>";
+        ali.html(aliHtml);
+        aul.append(ali);
+    }
+    return aul;
 }
 
 function buildSidebarDetailsProfileList(cpd) {
@@ -406,7 +422,8 @@ function buildSidebarDetailsProfileList(cpd) {
         var dna = buildSidebarDetailsProfileDisplayNameList(profs);
         for (var i=0;i<dna.length;i++) {
             var pli = $("<li/>");
-            pli.html("<span class=\"circleFocusOverviewField\">" + dna[i] + "</span>");
+            pli.html("<span class=\"circleFocusOverviewField\"><i class=\"fa fa-user\"></i> " + dna[i].name + "</span>");
+            pli.append(buildSidebarDetailsProfileAssertionList(dna[i].asrs));
             $(CIR_FCS_DTL_PROF_LIST).append(pli);
         }
         $(CIR_FCS_DTL_PROF_LIST_CTR).show();
@@ -468,7 +485,7 @@ function expandGapSummaryToCompNode(compNode) {
 function scrollCompNodeInGapSummary(compNode) {
     if ($("#" + buildGapSummaryCompItemElementId(compNode)).length > 0) {
         expandGapSummaryToCompNode(compNode);
-        $(CIR_FCS_DTL_PROF_LIST).scrollTo("#" + buildGapSummaryCompItemElementId(compNode), 500);
+        $(CIR_FCS_SUM_COMP_LIST_CTR).scrollTo("#" + buildGapSummaryCompItemElementId(compNode), 500);
     }
 }
 

@@ -20,12 +20,14 @@ var loggedInPkPem;
 var loggedInPpkPem;
 
 var contactsByNameMap;
-var contactsByPkPemMap = {};
+var contactsByPkPemMap;
 var contactDisplayList;
 
-var personContactsByPkPemMap = {};
-var personPemsByPersonIdMap = {};
+var personContactsByPkPemMap;
+var personPemsByPersonIdMap;
 
+var profileGroupList;
+var profileGroupMap;
 
 //**************************************************************************************************
 // Data Structures
@@ -36,6 +38,44 @@ function contactDisplayObj(contact) {
     this.pk = contact.pk;
     this.pkPem = contact.pk.toPem();
     this.hide = false;
+}
+
+//**************************************************************************************************
+// Organizations/Profile Groups
+//**************************************************************************************************
+
+function buildProfileGroupData(ecoa) {
+    profileGroupMap = {};
+    profileGroupList = [];
+    for (var i=0;i<ecoa.length;i++) {
+        if (ecoa[i].hasOwner(loggedInPk)) {
+            profileGroupMap[ecoa[i].shortId()] = ecoa[i];
+            profileGroupList.push(ecoa[i]);
+        }
+    }
+    profileGroupList.sort(function(a, b) {return a.name.localeCompare(b.name);})
+}
+
+function handleFetchOrganizationsSuccess(ecoa,callback) {
+    debugMessage("handleFetchOrganizationsSuccess: " + ecoa.length);
+    buildProfileGroupData(ecoa);
+    callback();
+}
+
+function handleFetchOrganizationsFailure(err) {
+    debugMessage("handleFetchOrganizationsFailure: " + err);
+    showPageError("Could not fetch EcOrganization list: " + err);
+}
+
+function findProfileGroups(callback) {
+    debugMessage("Finding repo Organzation objects...");
+    EcOrganization.search(repo,"",
+        function(ecoa){
+            handleFetchOrganizationsSuccess(ecoa,callback);
+        },
+        handleFetchOrganizationsFailure,
+        {'size':MAX_ORG_SEARCH_SIZE}
+    );
 }
 
 //**************************************************************************************************

@@ -23,7 +23,7 @@ const MAX_FWK_SEARCH_SIZE = 10000;
 const MAX_ASSR_SEARCH_SIZE = 10000;
 
 const IND_PRF_TYPE = "individuals";
-const TEAM_PRF_TYPE = "teams";
+const GRP_PRF_TYPE = "groups";
 
 const TITLE_FWK_FLTR_TYPE = "title";
 const DESC_FWK_FLTR_TYPE = "desc";
@@ -299,6 +299,7 @@ function parseSelectedProfiles(selectedProfs) {
 }
 
 function addSelectedProfiles() {
+    //TODO Handle Groups
     hideModalError(ADD_PRF_MODAL);
     var selectedProfs = $(ADD_PRF_RES_SELECT).val();
     if (!selectedProfs || selectedProfs.length == 0) showModalError(ADD_PRF_MODAL,"You must select at least one profile");
@@ -321,8 +322,8 @@ function filterAddProfResults() {
         if (profType == IND_PRF_TYPE) {
             setAddProfResultsDesc("All Individuals");
         }
-        else if (profType == TEAM_PRF_TYPE) {
-            setAddProfResultsDesc("All Teams");
+        else if (profType == GRP_PRF_TYPE) {
+            setAddProfResultsDesc("All Groups");
         }
     }
     else {
@@ -330,19 +331,32 @@ function filterAddProfResults() {
         if (profType == IND_PRF_TYPE) {
             setAddProfResultsDesc("Individuals with names containing '" + filter + "'");
         }
-        else if (profType == TEAM_PRF_TYPE) {
-            setAddProfResultsDesc("Teams  with names containing '" + filter + "'");
+        else if (profType == GRP_PRF_TYPE) {
+            setAddProfResultsDesc("Groups with names containing '" + filter + "'");
         }
     }
 }
 
 function fillInAddProfIndividualsResults() {
-    for (var i=0;i<contactDisplayList.length;i++) {
-        var c = contactDisplayList[i];
-        if (isPkPemAPerson(c.pkPem)) {
-            $('<option>').val(buildIDableString(c.pkPem)).text(c.displayName).appendTo(ADD_PRF_RES_SELECT);
+    if (contactDisplayList && contactDisplayList.length > 0) {
+        for (var i = 0; i < contactDisplayList.length; i++) {
+            var c = contactDisplayList[i];
+            if (isPkPemAPerson(c.pkPem)) {
+                $('<option>').val(buildIDableString(c.pkPem)).text(c.displayName).appendTo(ADD_PRF_RES_SELECT);
+            }
         }
     }
+    else $('<option>').val("na").text("There are no individuals in your contact list").appendTo(ADD_PRF_RES_SELECT);
+}
+
+function fillInAddProfGroupResults() {
+    if (profileGroupList && profileGroupList.length > 0) {
+        for (var i=0;i<profileGroupList.length;i++) {
+            var pg = profileGroupList[i];
+            $('<option>').val(buildIDableString(pg.shortId())).text(pg.name).appendTo(ADD_PRF_RES_SELECT);
+        }
+    }
+    else $('<option>').val("na").text("There are no groups to display").appendTo(ADD_PRF_RES_SELECT);
 }
 
 function fillInAddProfResults(profType) {
@@ -352,9 +366,9 @@ function fillInAddProfResults(profType) {
         setAddProfResultsDesc("All Individuals");
         fillInAddProfIndividualsResults();
     }
-    else if (profType == TEAM_PRF_TYPE) {
-        setAddProfResultsDesc("All Teams");
-        $('<option>').val("na").text("TODO: Build Team Interface").appendTo(ADD_PRF_RES_SELECT);
+    else if (profType == GRP_PRF_TYPE) {
+        setAddProfResultsDesc("All Groups");
+        fillInAddProfGroupResults();
     }
     else {
         $('<option>').val("na").text("Unknown Profile Type").appendTo(ADD_PRF_RES_SELECT);

@@ -16,7 +16,11 @@ const INIT_PRF_EXP_MESSAGE = "initProfileExplorer";
 
 function performInitIdentityAction(data) {
     setupIdentity(data.serverParm,data.nameParm,data.pemParm);
-    identifyEcPersons(loadPageContents);
+    identifyEcPersons(
+        function() {
+            findProfileGroups(loadPageContents);
+        }
+    );
     //loadPageContents();
 }
 

@@ -2,6 +2,13 @@
 // CASS UI Gap Analysis Session Functions
 //**************************************************************************************************
 
+
+//**************************************************************************************************
+// Constants
+
+const MAX_PRS_SEARCH_SIZE = 10000;
+const MAX_ORG_SEARCH_SIZE = 10000;
+
 //**************************************************************************************************
 // Variables
 
@@ -16,6 +23,10 @@ var contactsByNameMap;
 var contactsByPkPemMap = {};
 var contactDisplayList;
 
+var personContactsByPkPemMap = {};
+var personPemsByPersonIdMap = {};
+
+
 //**************************************************************************************************
 // Data Structures
 //**************************************************************************************************
@@ -25,6 +36,81 @@ function contactDisplayObj(contact) {
     this.pk = contact.pk;
     this.pkPem = contact.pk.toPem();
     this.hide = false;
+}
+
+//**************************************************************************************************
+// Persons
+//**************************************************************************************************
+
+function getPkPemsForPersonIds(pida) {
+    var pkPems = [];
+    for (var i=0;i<pida.length;i++) {
+        var pkp = personPemsByPersonIdMap[pida[i]];
+        if (pkp) pkPems.push(pkp);
+    }
+    return pkPems;
+}
+
+function isPkPemAPerson(pkPem) {
+    if (personContactsByPkPemMap.hasOwnProperty(pkPem)) return true;
+    else return false;
+}
+
+function buildContactsFingerprintMap() {
+    var cfm = {};
+    for (var pkPem in contactsByPkPemMap) {
+        if (contactsByPkPemMap.hasOwnProperty(pkPem)) {
+            var fp = contactsByPkPemMap[pkPem].pk.fingerprint();
+            cfm[fp] = pkPem;
+        }
+    }
+    return cfm;
+}
+
+function buildPersonFingerprintMap(ecpa) {
+    var pfpm = [];
+    for (var i=0;i<ecpa.length;i++) {
+        var pfp = ecpa[i].getFingerprintFromId();
+        if (pfp) pfpm[pfp] = ecpa[i];
+    }
+    return pfpm;
+}
+
+function buildPersonData(ecpa) {
+    personContactsByPkPemMap = {};
+    personPemsByPersonIdMap = {};
+    var pfpm = buildPersonFingerprintMap(ecpa);
+    var cfm = buildContactsFingerprintMap();
+    for (var fp in cfm) {
+        if (cfm.hasOwnProperty(fp)) {
+            if (pfpm.hasOwnProperty(fp)) {
+                personContactsByPkPemMap[cfm[fp]] = pfpm[fp];
+                personPemsByPersonIdMap[pfpm[fp].shortId()] = cfm[fp];
+            }
+        }
+    }
+}
+
+function handleFetchPersonsSuccess(ecpa,callback) {
+    debugMessage("handleFetchPersonsSuccess: " + ecpa.length);
+    buildPersonData(ecpa);
+    callback();
+}
+
+function handleFetchPersonsFailure(err) {
+    debugMessage("handleFetchPersonsFailure: " + err);
+    showPageError("Could not fetch EcPerson list: " + err);
+}
+
+function identifyEcPersons(callback) {
+    debugMessage("Finding repo Person objects...");
+    EcPerson.search(repo,"",
+        function(ecpa){
+            handleFetchPersonsSuccess(ecpa,callback);
+        },
+        handleFetchPersonsFailure,
+        {'size':MAX_PRS_SEARCH_SIZE}
+    );
 }
 
 //**************************************************************************************************

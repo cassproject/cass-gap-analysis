@@ -339,7 +339,9 @@ function filterAddProfResults() {
 function fillInAddProfIndividualsResults() {
     for (var i=0;i<contactDisplayList.length;i++) {
         var c = contactDisplayList[i];
-        $('<option>').val(buildIDableString(c.pkPem)).text(c.displayName).appendTo(ADD_PRF_RES_SELECT);
+        if (isPkPemAPerson(c.pkPem)) {
+            $('<option>').val(buildIDableString(c.pkPem)).text(c.displayName).appendTo(ADD_PRF_RES_SELECT);
+        }
     }
 }
 

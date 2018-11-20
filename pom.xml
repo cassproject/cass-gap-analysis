@@ -41,6 +41,11 @@
 			<artifactId>cass.rollup</artifactId>
 			<version>${ec-version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.eduworks</groupId>
+			<artifactId>com.eduworks.schema</artifactId>
+			<version>${ec-version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -121,6 +126,7 @@
 								<jsSourceFile>js/cass/ebac.repository.js</jsSourceFile>
 								<jsSourceFile>js/cass/cass.competency.js</jsSourceFile>
 								<jsSourceFile>js/cass/cass.rollup.js</jsSourceFile>
+								<jsSourceFile>js/cass/com.eduworks.schema.js</jsSourceFile>
 							</jsSourceFiles>
 							<closureLanguageIn>ECMASCRIPT6</closureLanguageIn>
 							<closureLanguageOut>ECMASCRIPT5</closureLanguageOut>

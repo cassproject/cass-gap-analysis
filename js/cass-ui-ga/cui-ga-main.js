@@ -201,6 +201,10 @@ function checkForGapContentsSearchbarEnter(event) {
     }
 }
 
+function openProfileExplorer(profilePem) {
+    sendInitProfileExplorerMessage(profilePem);
+}
+
 //**************************************************************************************************
 // Adjust Gap Rules Modal
 //**************************************************************************************************
@@ -393,6 +397,7 @@ function buildSidebarDetailsProfileDisplayNameList(profObj) {
         if (profObj.hasOwnProperty(pem)) {
             var po = {};
             po.name = contactsByPkPemMap[pem].displayName;
+            po.pem = pem;
             po.asrs = profObj[pem];
             dna.push(po);
         }
@@ -422,7 +427,7 @@ function buildSidebarDetailsProfileList(cpd) {
         var dna = buildSidebarDetailsProfileDisplayNameList(profs);
         for (var i=0;i<dna.length;i++) {
             var pli = $("<li/>");
-            pli.html("<span class=\"circleFocusOverviewField\"><i class=\"fa fa-user\"></i> " + dna[i].name + "</span>");
+            pli.html("<a onclick=\"openProfileExplorer('" + escapeSingleQuote(dna[i].pem) + "')\"><i class=\"fa fa-user\"></i> " + dna[i].name + "</a>");
             pli.append(buildSidebarDetailsProfileAssertionList(dna[i].asrs));
             $(CIR_FCS_DTL_PROF_LIST).append(pli);
         }
@@ -584,11 +589,24 @@ function buildGapSummaryOverview() {
     $(CIR_FCS_SUM_COV).html(numberOfCompsCovered + "/" + numberOfComps + " (" + generatePercentFromNumber(numberOfCompsCovered/numberOfComps) + ")");
 }
 
+function buildSummaryProfileDisplayListObject() {
+    var pdoa = [];
+    for (var i=0;i<selectedProfiles.length;i++) {
+        var pdo = {};
+        pdo.name = contactsByPkPemMap[selectedProfiles[i]].displayName;
+        pdo.pem = selectedProfiles[i];
+        pdoa.push(pdo);
+    }
+    pdoa.sort(function (a, b) {return a.name.localeCompare(b.name);});
+    return pdoa;
+}
+
 function buildSelectedProfileList() {
     $(CIR_FCS_SUM_SEL_PROF_LIST).empty();
-    for (var i=0;i<selectedProfiles.length;i++) {
+    var pdoa = buildSummaryProfileDisplayListObject();
+    for (var i=0;i<pdoa.length;i++) {
         var spLi = $("<li/>");
-        spLi.html(contactsByPkPemMap[selectedProfiles[i]].displayName);
+        spLi.html("<a onclick=\"openProfileExplorer('" + escapeSingleQuote(pdoa[i].pem) +  "')\">" + pdoa[i].name + "</a>");
         $(CIR_FCS_SUM_SEL_PROF_LIST).append(spLi);
     }
 }

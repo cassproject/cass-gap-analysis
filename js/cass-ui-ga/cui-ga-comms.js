@@ -8,6 +8,7 @@
 const WAITING_MESSAGE = "waiting";
 
 const INIT_IDENTITY_ACTION = "initIdentity";
+const INIT_PRF_EXP_MESSAGE = "initProfileExplorer";
 
 //**************************************************************************************************
 // Action Executions
@@ -27,6 +28,15 @@ function sendWaitingMessage() {
         message: WAITING_MESSAGE
     };
     debugMessage("Sending '" + WAITING_MESSAGE + "' message:" + JSON.stringify(message));
+    parent.postMessage(message, queryParams.origin);
+}
+
+function sendInitProfileExplorerMessage(profilePem) {
+    var message = {
+        message: INIT_PRF_EXP_MESSAGE,
+        profilePem: profilePem
+    };
+    debugMessage("Sending '" + INIT_PRF_EXP_MESSAGE + "' message:" + JSON.stringify(message));
     parent.postMessage(message, queryParams.origin);
 }
 

@@ -219,6 +219,18 @@ input:checked~.switch-paddle {
     font-size:.85rem;
 }
 
+.circleFocusOverviewGroup {
+    /*font-weight: bold;*/
+}
+
+.groupMemberIndToggle {
+    font-size: .6rem !important;
+    padding: 2px 3px;
+    background-color: #999 !important;
+    color: #ffffff !important;
+    margin-bottom: .4rem;
+}
+
 .gapSummaryCompCov,
 .circleFocusOverviewField,
 #circleFocusSummarySelProfList li {
@@ -258,11 +270,6 @@ input:checked~.switch-paddle {
 
 #circleFocusCompDetailsLink i {
     margin-top: .8rem;
-}
-
-#circleFocusSummaryCompListCtr {
-    max-height: 22rem;
-    overflow-y: auto;
 }
 
 #circleFocusDetailsProfListContainer ul {

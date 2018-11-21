@@ -14,6 +14,8 @@
 
 //TODO toggleGapSummaryCompChild figure out bug with this (same with Framework Explorer)
 
+//TODO parseSelectedGroupProfiles ONLY Include Org members that are contacts???
+
 //**************************************************************************************************
 // Constants
 
@@ -31,11 +33,15 @@ const DESC_FWK_FLTR_TYPE = "desc";
 const INIT_MODE = "init";
 const ADD_MODE = "add";
 
+const NA_SEL = "na";
+
 //**************************************************************************************************
 // Variables
 
 var currentAddMode = INIT_MODE;
+var selectedProfileType;
 var selectedProfiles = [];
+var selectedGroups = [];
 var selectedFramework;
 
 var hasSelectedFrameworkBeenProcessed = false;
@@ -290,26 +296,79 @@ function openAddFrameworkModal() {
 // Add Profile Modal
 //**************************************************************************************************
 
-function parseSelectedProfiles(selectedProfs) {
-    selectedProfiles = [];
+
+function buildSelectedGroupMemberInfo(pkPem, selectedProfileObject,selectedGroupObject) {
+    selectedProfileObject[pkPem] = pkPem;
+    var gmo = {};
+    gmo.name = contactsByPkPemMap[pkPem].displayName;
+    gmo.pkPem = pkPem;
+    selectedGroupObject.member.push(gmo);
+}
+
+//TODO parseSelectedGroupProfiles ONLY Include Org members that are contacts???
+function parseSelectedGroupProfiles(selectedProfs) {
+    var spo = {};
+    for (var i=0;i<selectedProfs.length;i++) {
+        var pg = profileGroupMapByIDableString[selectedProfs[i]];
+        if (pg && pg.member && pg.member.constructor === Array) {
+            var go = {};
+            go.name = pg.name;
+            go.idable = selectedProfs[i];
+            go.member = [];
+            for (var j=0;j<pg.member.length;j++) {
+                if (isPersonAContact(pg.member[j])) {
+                    buildSelectedGroupMemberInfo(personPemsByPersonIdMap[pg.member[j]],spo,go);
+                }
+            }
+            if (go.member.length > 0) {
+                go.member.sort(function(a, b) {return a.name.localeCompare(b.name);});
+                selectedGroups.push(go);
+            }
+        }
+    }
+    selectedGroups.sort(function(a, b) {return a.name.localeCompare(b.name);});
+    selectedProfiles = Object.keys(spo);
+}
+
+function parseSelectedIndividualProfiles(selectedProfs) {
     for (var i=0;i<contactDisplayList.length;i++) {
         var c = contactDisplayList[i];
         if (selectedProfs.includes(buildIDableString(c.pkPem))) selectedProfiles.push(c.pkPem);
     }
 }
 
+function parseSelectedProfiles(selectedProfs) {
+    selectedProfiles = [];
+    selectedGroups = [];
+    selectedProfileType = $(ADD_PRF_TYPE_SELECT).val();
+    if (selectedProfileType == IND_PRF_TYPE) parseSelectedIndividualProfiles(selectedProfs);
+    else if (selectedProfileType == GRP_PRF_TYPE) parseSelectedGroupProfiles(selectedProfs);
+}
+
+function filterNasFromProfileSelection(profSel) {
+    var fps = [];
+    if (profSel) {
+        for (var i=0;i<profSel.length;i++) {
+            if (profSel != NA_SEL) fps.push(profSel[i]);
+        }
+    }
+    return fps;
+}
+
 function addSelectedProfiles() {
-    //TODO Handle Groups
     hideModalError(ADD_PRF_MODAL);
-    var selectedProfs = $(ADD_PRF_RES_SELECT).val();
+    var selectedProfs = filterNasFromProfileSelection($(ADD_PRF_RES_SELECT).val());
     if (!selectedProfs || selectedProfs.length == 0) showModalError(ADD_PRF_MODAL,"You must select at least one profile");
     else {
         parseSelectedProfiles(selectedProfs);
-        haveSelectedProfilesBeenProcessed = false;
-        if (currentAddMode == INIT_MODE) openAddFrameworkModal();
+        if (!selectedProfiles || selectedProfiles.length == 0) showModalError(ADD_PRF_MODAL,"You must select at least one profile");
         else {
-            $(ADD_PRF_MODAL).foundation('close');
-            buildGapAnalysisData();
+            haveSelectedProfilesBeenProcessed = false;
+            if (currentAddMode == INIT_MODE) openAddFrameworkModal();
+            else {
+                $(ADD_PRF_MODAL).foundation('close');
+                buildGapAnalysisData();
+            }
         }
     }
 }
@@ -346,7 +405,7 @@ function fillInAddProfIndividualsResults() {
             }
         }
     }
-    else $('<option>').val("na").text("There are no individuals in your contact list").appendTo(ADD_PRF_RES_SELECT);
+    else $('<option>').val(NA_SEL).text("There are no individuals in your contact list").appendTo(ADD_PRF_RES_SELECT);
 }
 
 function fillInAddProfGroupResults() {
@@ -356,7 +415,7 @@ function fillInAddProfGroupResults() {
             $('<option>').val(buildIDableString(pg.shortId())).text(pg.name).appendTo(ADD_PRF_RES_SELECT);
         }
     }
-    else $('<option>').val("na").text("There are no groups to display").appendTo(ADD_PRF_RES_SELECT);
+    else $('<option>').val(NA_SEL).text("There are no groups to display").appendTo(ADD_PRF_RES_SELECT);
 }
 
 function fillInAddProfResults(profType) {
@@ -371,7 +430,7 @@ function fillInAddProfResults(profType) {
         fillInAddProfGroupResults();
     }
     else {
-        $('<option>').val("na").text("Unknown Profile Type").appendTo(ADD_PRF_RES_SELECT);
+        $('<option>').val(NA_SEL).text("Unknown Profile Type").appendTo(ADD_PRF_RES_SELECT);
     }
 }
 
@@ -418,7 +477,7 @@ function buildSidebarDetailsProfileDisplayNameList(profObj) {
             dna.push(po);
         }
     }
-    dna.sort(function(a, b) {return a.name.localeCompare(b.name);})
+    dna.sort(function(a, b) {return a.name.localeCompare(b.name);});
     return dna;
 }
 
@@ -605,7 +664,7 @@ function buildGapSummaryOverview() {
     $(CIR_FCS_SUM_COV).html(numberOfCompsCovered + "/" + numberOfComps + " (" + generatePercentFromNumber(numberOfCompsCovered/numberOfComps) + ")");
 }
 
-function buildSummaryProfileDisplayListObject() {
+function buildSummaryIndividualProfileDisplayListObject() {
     var pdoa = [];
     for (var i=0;i<selectedProfiles.length;i++) {
         var pdo = {};
@@ -617,14 +676,62 @@ function buildSummaryProfileDisplayListObject() {
     return pdoa;
 }
 
-function buildSelectedProfileList() {
-    $(CIR_FCS_SUM_SEL_PROF_LIST).empty();
-    var pdoa = buildSummaryProfileDisplayListObject();
+function buildIndividualSelectedProfileList() {
+    var pdoa = buildSummaryIndividualProfileDisplayListObject();
     for (var i=0;i<pdoa.length;i++) {
         var spLi = $("<li/>");
-        spLi.html("<a onclick=\"openProfileExplorer('" + escapeSingleQuote(pdoa[i].pem) +  "')\">" + pdoa[i].name + "</a>");
+        spLi.html("<a title=\"View Profile\" onclick=\"openProfileExplorer('" + escapeSingleQuote(pdoa[i].pem) +  "')\">" + pdoa[i].name + "</a>");
         $(CIR_FCS_SUM_SEL_PROF_LIST).append(spLi);
     }
+}
+
+function toggleGroupMemDivInd(ce) {
+    if (ce.find('i:first').hasClass("fa-chevron-right")) {
+        ce.find('i:first').attr("class", "fa fa-chevron-down");
+        ce.attr("title", "Hide Group Members");
+    }
+    else {
+        ce.find('i:first').attr("class", "fa fa-chevron-right");
+        ce.attr("title", "Show Group Members");
+    }
+}
+
+function buildGroupMemberListDiv(memDivId,memberList) {
+    var memDiv = $("<div/>");
+    //evDiv.addClass("cdmAsrEvDiv");
+    memDiv.attr("id", memDivId);
+    memDiv.attr("style", "display:none");
+    var memUl = $("<ul/>");
+    $(memberList).each(function (i, m) {
+        var memLi = $("<li/>");
+        var memLiHtml = "<a title=\"View Profile\" onclick=\"openProfileExplorer('" + escapeSingleQuote(m.pkPem) +  "')\">" + m.name + "</a>";
+        memLi.html(memLiHtml);
+        memUl.append(memLi);
+    });
+    memDiv.append(memUl);
+    return memDiv;
+}
+
+function buildGroupSelectedProfileList() {
+    for (var i=0;i<selectedGroups.length;i++) {
+        var g = selectedGroups[i];
+        var gLi = $("<li/>");
+        var memDivId = g.idable + "_mems";
+        var gLiHtml  = "<span class=\"circleFocusOverviewGroup\">" + g.name + "</span>";
+        gLiHtml += "&nbsp;&nbsp;<a onclick=\"$('#" + memDivId + "').toggle();toggleGroupMemDivInd($(this));\" " +
+            "title=\"Show Group Members\" class=\"button tiny groupMemberIndToggle\">" + g.member.length +
+            "&nbsp;&nbsp;<i class=\"fa fa-chevron-right\"></i></a>";
+        var memDiv = buildGroupMemberListDiv(memDivId,g.member);
+        gLi.html(gLiHtml);
+        gLi.append(memDiv);
+        $(CIR_FCS_SUM_SEL_PROF_LIST).append(gLi);
+    }
+}
+
+function buildSelectedProfileList() {
+    $(CIR_FCS_SUM_SEL_PROF_LIST).empty();
+    if (selectedProfileType == IND_PRF_TYPE) buildIndividualSelectedProfileList();
+    else if (selectedProfileType == GRP_PRF_TYPE) buildGroupSelectedProfileList();
 }
 
 function buildGraphProfileSummary() {

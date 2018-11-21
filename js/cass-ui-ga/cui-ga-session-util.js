@@ -27,7 +27,7 @@ var personContactsByPkPemMap;
 var personPemsByPersonIdMap;
 
 var profileGroupList;
-var profileGroupMap;
+var profileGroupMapByIDableString;
 
 //**************************************************************************************************
 // Data Structures
@@ -45,11 +45,11 @@ function contactDisplayObj(contact) {
 //**************************************************************************************************
 
 function buildProfileGroupData(ecoa) {
-    profileGroupMap = {};
+    profileGroupMapByIDableString = {};
     profileGroupList = [];
     for (var i=0;i<ecoa.length;i++) {
         if (ecoa[i].hasOwner(loggedInPk)) {
-            profileGroupMap[ecoa[i].shortId()] = ecoa[i];
+            profileGroupMapByIDableString[buildIDableString(ecoa[i].shortId())] = ecoa[i];
             profileGroupList.push(ecoa[i]);
         }
     }
@@ -81,6 +81,15 @@ function findProfileGroups(callback) {
 //**************************************************************************************************
 // Persons
 //**************************************************************************************************
+
+function isPersonAContact(personId) {
+    var pkPem = personPemsByPersonIdMap[personId];
+    if (pkPem) {
+        if (personContactsByPkPemMap.hasOwnProperty(pkPem)) return true;
+        else return false;
+    }
+    else return false;
+}
 
 function getPkPemsForPersonIds(pida) {
     var pkPems = [];

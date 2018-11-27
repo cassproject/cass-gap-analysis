@@ -11,10 +11,13 @@
 //TODO getProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
 //TODO getAssertionsForD3NodeInclusive fix for multi node clusters
 //TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
+//TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 
 //TODO toggleGapSummaryCompChild figure out bug with this (same with Framework Explorer)
 
 //TODO parseSelectedGroupProfiles ONLY Include Org members that are contacts???
+
+//TODO Handle Same Competency IDs across multiple frameworks
 
 //**************************************************************************************************
 // Constants
@@ -38,13 +41,16 @@ const NA_SEL = "na";
 //**************************************************************************************************
 // Variables
 
+var hasFinishedLoading = false;
+
 var currentAddMode = INIT_MODE;
 var selectedProfileType;
 var selectedProfiles = [];
 var selectedGroups = [];
-var selectedFramework;
+var selectedFrameworks = [];
+var selectedFrameworksMap = {};
 
-var hasSelectedFrameworkBeenProcessed = false;
+var haveSelectedFrameworksBeenProcessed = false;
 var haveSelectedProfilesBeenProcessed = false;
 
 var availableFrameworkList = [];
@@ -61,10 +67,14 @@ var assertionNegativeMap;
 var profileAssertionsMap;
 var competencyAssertionMap;
 
-var selectedFrameworkCompetencyData;
-var selectedFrameworkNodePacketGraph;
-var currentD3FrameworkNode;
-var currentD3FrameworkNodeString;
+var selectedFrameworksCompetencyData;
+var selectedFrameworksNodePacketGraphMap;
+var gapDisplayHelperData;
+var gapD3NodeString;
+
+var frameworksToCollapse;
+var frameworksCollapsed;
+var collapseErrorTriggered;
 
 //**************************************************************************************************
 // Utility Functions
@@ -72,8 +82,10 @@ var currentD3FrameworkNodeString;
 
 function initializeSelectedDataPoints() {
     selectedProfiles = [];
-    selectedFramework = null;
-    hasSelectedFrameworkBeenProcessed = false;
+    selectedGroups = [];
+    selectedFrameworks = [];
+    selectedFrameworksMap = {};
+    haveSelectedFrameworksBeenProcessed = false;
     haveSelectedProfilesBeenProcessed = false;
 }
 
@@ -83,32 +95,44 @@ function getFrameworkName(frameworkId) {
     else return "Framework not found";
 }
 
-function getCompetencyName(compId) {
-    if (compId == selectedFramework.getName()) return selectedFramework.getName();
-    if (selectedFrameworkCompetencyData.competencyPacketDataMap[compId]) {
-        return selectedFrameworkCompetencyData.competencyPacketDataMap[compId].name;
+function isFrameworkId(id) {
+    var x = selectedFrameworksMap[id];
+    if (x) return true;
+    else return false;
+}
+
+function getCompetencyOrFrameworkName(id) {
+    if (isFrameworkId(id)) return getFrameworkName(id);
+    if (selectedFrameworksCompetencyData.competencyPacketDataMap[id]) {
+        return selectedFrameworksCompetencyData.competencyPacketDataMap[id].name;
     }
     else return "";
 }
 
 function getCassNodePacket(packetId) {
-    if (selectedFrameworkCompetencyData && selectedFrameworkCompetencyData.competencyPacketDataMap &&
-        selectedFrameworkCompetencyData.competencyPacketDataMap[packetId]) {
-        return selectedFrameworkCompetencyData.competencyPacketDataMap[packetId].cassNodePacket;
+    if (selectedFrameworksCompetencyData && selectedFrameworksCompetencyData.competencyPacketDataMap &&
+        selectedFrameworksCompetencyData.competencyPacketDataMap[packetId]) {
+        return selectedFrameworksCompetencyData.competencyPacketDataMap[packetId].cassNodePacket;
     }
     else return null;
 }
 
 function getCompetencyD3NodeTracker(trackerId) {
-    if (selectedFrameworkCompetencyData && selectedFrameworkCompetencyData.competencyD3NodeTrackerMap &&
-        selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[trackerId]) {
-        return selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[trackerId];
+    if (selectedFrameworksCompetencyData && selectedFrameworksCompetencyData.competencyD3NodeTrackerMap &&
+        selectedFrameworksCompetencyData.competencyD3NodeTrackerMap[trackerId]) {
+        return selectedFrameworksCompetencyData.competencyD3NodeTrackerMap[trackerId];
     }
     else return null;
 }
 
 function countTotalNumberOfCompetenciesWithoutCoverage() {
-    return countNumberOfCpdChildrenWithoutCoverage(currentD3FrameworkNode.children);
+    var total = 0;
+    for (var fwId in gapDisplayHelperData.frameworkHelperMap) {
+        if (gapDisplayHelperData.frameworkHelperMap.hasOwnProperty(fwId)) {
+            total += countNumberOfCpdChildrenWithoutCoverage(gapDisplayHelperData.frameworkHelperMap[fwId].children);
+        }
+    }
+    return total;
 }
 
 function getAssertionsForCompetency(compId) {
@@ -118,7 +142,7 @@ function getAssertionsForCompetency(compId) {
 
 //TODO getAssertionsForD3NodeInclusive fix for multi node clusters
 function getAssertionsForD3NodeInclusive(d3Node) {
-    var d3nt = selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[d3Node.data.name.trim()];
+    var d3nt = selectedFrameworksCompetencyData.competencyD3NodeTrackerMap[d3Node.data.name.trim()];
     var asArray = getAssertionsForCompetency(d3nt.id);
     if (!d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return asArray;
     else return asArray.concat(getAssertionsForD3NodeInclusive(d3nt.d3Node.parent));
@@ -126,7 +150,7 @@ function getAssertionsForD3NodeInclusive(d3Node) {
 
 function getAssertionsForCompetencyPacketDataInclusive(cpd) {
     var asArray = getAssertionsForCompetency(cpd.id);
-    var d3nt = selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[cpd.id];
+    var d3nt = selectedFrameworksCompetencyData.competencyD3NodeTrackerMap[cpd.id];
     if (!d3nt || !d3nt.d3Node || !d3nt.d3Node.parent || d3nt.d3Node.parent == null) return asArray;
     else return asArray.concat(getAssertionsForD3NodeInclusive(d3nt.d3Node.parent));
 }
@@ -145,7 +169,7 @@ function getUniqueProfilesForAssertions(asArray) {
 
 //TODO getProfilesWithAssertedCompetencyAndParents adjust for multi-node clusters
 function getProfilesWithAssertedCompetencyAndParents(compId) {
-    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+    var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[compId];
     if (!cpd) return [];
     else {
         var asArray =  getAssertionsForCompetencyPacketDataInclusive(cpd);
@@ -175,7 +199,7 @@ function countNumberOfCpdChildrenWithoutCoverage(cpdArray) {
 
 function countNumberOfCompetenciesWithoutCoverage(compId) {
     var numCompsWoCoverage = 0;
-    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+    var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[compId];
     if (cpd.hasAssertion) return 0;
     else {
         numCompsWoCoverage++;
@@ -195,7 +219,7 @@ function countNumberOfCpdDescendants(cpdArray) {
 
 //TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 function getNumberOfCompetencyDescendants(compId) {
-    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+    var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[compId];
     if (cpd) return countNumberOfCpdDescendants(cpd.children);
     return 0;
 }
@@ -224,26 +248,28 @@ function openAdjustGapRulesModal() {
 //**************************************************************************************************
 
 //Right now this only handles a single framework...may need to account for multiple frameworks at some point
-function parseSelectedFramework(selectedFwk) {
-    selectedFramework =  null;
+function parseSelectedFramework(selectedFwks) {
+    selectedFrameworks = [];
+    selectedFrameworksMap = {};
     for (var i=0;i<availableFrameworkList.length;i++) {
         var f = availableFrameworkList[i];
-        if (buildIDableString(f.shortId()) == selectedFwk) {
-            selectedFramework = f;
+        if (selectedFwks.includes(buildIDableString(f.shortId()))) {
+            selectedFrameworksMap[f.shortId()] = f;
+            selectedFrameworks.push(f);
         }
     }
+    selectedFrameworks.sort(function(a, b) {return a.getName().localeCompare(b.getName());});
 }
 
 function addSelectedFrameworks() {
     hideModalError(ADD_FWK_MODAL);
-    var selectedFwk = $(ADD_FWK_RES_SELECT).val();
-    if (!selectedFwk || selectedFwk.trim().length == 0) showModalError(ADD_FWK_MODAL,"You must select a framework");
+    var selectedFwks = $(ADD_FWK_RES_SELECT).val();
+    if (!selectedFwks || selectedFwks.length == 0) showModalError(ADD_FWK_MODAL,"You must select at least one framework");
     else {
-        parseSelectedFramework(selectedFwk);
-        hasSelectedFrameworkBeenProcessed = false;
+        parseSelectedFramework(selectedFwks);
+        haveSelectedFrameworksBeenProcessed = false;
         currentAddMode = ADD_MODE;
         $(ADD_FWK_MODAL).foundation('close');
-        setCircleFocusSummaryHeader(selectedFramework.getName());
         buildGapAnalysisData();
     }
 }
@@ -454,8 +480,8 @@ function openAddProfileModal() {
 //**************************************************************************************************
 function getGapCgCircleText(d) {
     if (!d || !d.data || !d.data.name) return "UNDEFINED 'D'";
-    else if (selectedFrameworkCompetencyData.competencyD3NodeTrackerMap[d.data.name]) {
-        var text = getCompetencyName(d.data.name);
+    else if (selectedFrameworksCompetencyData.competencyD3NodeTrackerMap[d.data.name]) {
+        var text = getCompetencyOrFrameworkName(d.data.name);
         if (text == "") text = "UNDEFINED NODE PACKET";
         return text;
     }
@@ -487,7 +513,7 @@ function buildSidebarDetailsProfileAssertionList(asrList) {
         var ali = $("<li/>");
         ali.addClass("circleFocusDetailAssertion");
         var aliHtml = "<i class=\"fa fa-circle\" aria-hidden=\"true\"></i> holds <strong>" +
-            getCompetencyName(asrList[i].competency) + "</strong> from <i>" + asrList[i].getAgentName() + "</i>";
+            getCompetencyOrFrameworkName(asrList[i].competency) + "</strong> from <i>" + asrList[i].getAgentName() + "</i>";
         ali.html(aliHtml);
         aul.append(ali);
     }
@@ -513,12 +539,13 @@ function buildSidebarDetailsProfileList(cpd) {
 //TODO showCircleGraphSidebarDetails handle multi node packets
 function showCircleGraphSidebarDetails(compId) {
     hideCircleSidebarDetails();
-    if (!compId || compId == null) return;
-    else if (compId == selectedFramework.getName()) {
-        removeAllGapSummaryHighLighting();
+    removeAllGapSummaryHighLighting();
+    if (!compId || compId == null || compId == GAP_NODE_ROOT_NAME) {
+        return;
     }
+    else if (isFrameworkId(compId)) scrollFrameworkGapSummary(compId);
     else {
-        var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[compId];
+        var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[compId];
         if (!cpd || cpd == null) debugMessage("Cannot locate competency data for: " + compId);
         else {
             $(CIR_FCS_DTL_SING_NAME).html(cpd.name);
@@ -569,6 +596,21 @@ function scrollCompNodeInGapSummary(compNode) {
     }
 }
 
+function expandGapSummaryToFramework(fwId) {
+    var obj = $("#" + buildIDableString(fwId) + "_psi");
+    removeAllGapSummaryHighLighting();
+    obj.addClass("active");
+    var objPP = obj.parent().parent();
+    expandGapSummaryToObject(objPP);
+}
+
+function scrollFrameworkGapSummary(fwId) {
+    if ($("#" + buildIDableString(fwId) + "_psi").length > 0) {
+        expandGapSummaryToFramework(fwId);
+        $(CIR_FCS_SUM_COMP_LIST_CTR).scrollTo("#" + buildIDableString(fwId) + "_psi", 500);
+    }
+}
+
 function buildGapSummaryCompItemElementId(compNode) {
     return buildIDableString(compNode.getId().trim()) + "_psi";
 }
@@ -616,22 +658,22 @@ function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildr
 }
 
 //TODO addChildToGapSummaryCompList construct list view for multi node competency cluster
-function addChildToGapSummaryCompList(parentUl, childCcn, isRootComp) {
+function addChildToGapSummaryCompList(parentUl, childCpd, isRootComp) {
     var childLi = $("<li/>");
     if (isRootComp) childLi.addClass("gpsiRootComp");
     else childLi.addClass("gpsiNonRootComp");
-    var cpd = selectedFrameworkCompetencyData.competencyPacketDataMap[childCcn.id];
+    var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[childCpd.id];
     var compNode = cpd.cassNodePacket.getNodeList()[0];
-    var hasChildren = childCcn.children && childCcn.children.length > 0;
+    var hasChildren = childCpd.children && childCpd.children.length > 0;
     childLi.html(generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildren));
     if (hasChildren) {
-        childCcn.children.sort(function (a, b) {
+        childCpd.children.sort(function (a, b) {
             return a.name.localeCompare(b.name);
         });
         var childsChildUl = $("<ul/>");
         childsChildUl.attr("class", "fa-ul gpsiChild");
         childsChildUl.attr("style", "display:none");
-        $(childCcn.children).each(function (i, cc) {
+        $(childCpd.children).each(function (i, cc) {
             addChildToGapSummaryCompList(childsChildUl, cc, false);
         });
         childLi.append(childsChildUl);
@@ -639,25 +681,62 @@ function addChildToGapSummaryCompList(parentUl, childCcn, isRootComp) {
     parentUl.append(childLi);
 }
 
-function buildGapSummaryCompetencyList() {
-    $(CIR_FCS_SUM_COMP_LIST_CTR).empty();
-    var d3fn = currentD3FrameworkNode;
-    if (!d3fn || d3fn == null) return;
-    if (d3fn.children && d3fn.children.length > 0) {
-        d3fn.children.sort(function (a, b) {
+function buildGapSummaryFrameworkCompetencyList(parentElem,cpdArray,ulClass,hideElem) {
+    if (cpdArray && cpdArray.length > 0) {
+        cpdArray.sort(function (a, b) {
             return a.name.localeCompare(b.name);
         });
         var childUl = $("<ul/>");
-        childUl.attr("class", "no-bullets gpsiChild");
-        $(d3fn.children).each(function (i, c) {
+        childUl.attr("class", ulClass + " gpsiChild");
+        if (hideElem) childUl.attr("style", "display:none");
+        $(cpdArray).each(function (i, c) {
             addChildToGapSummaryCompList(childUl, c, true);
         });
-        $(CIR_FCS_SUM_COMP_LIST_CTR).append(childUl);
+        parentElem.append(childUl);
     }
 }
 
+function generateFrameworkLineItemHtmlGapSummaryCoverageText(fw) {
+    var numberOfFrameworkCompetencies = fw.competency.length;
+    var numberOfCompsWithoutCoverage = countNumberOfCpdChildrenWithoutCoverage(gapDisplayHelperData.frameworkHelperMap[fw.shortId()].children);
+    var numberOfCompsCovered = numberOfFrameworkCompetencies - numberOfCompsWithoutCoverage;
+    var cto = {};
+    cto["title"] = numberOfCompsCovered + " of the " + numberOfFrameworkCompetencies + " areas in this framework are covered.";
+    cto["details"] = "<span class=\"gapSummaryCompCov\"><i class=\"fa fa-book\"></i> " + numberOfCompsCovered + "/" + numberOfFrameworkCompetencies +
+        " (" + generatePercentFromNumber(numberOfCompsCovered/numberOfFrameworkCompetencies) + ") </span>";
+    return cto;
+}
+
+function buildGapSummaryMultiSelectedFrameworkCompetencyList() {
+    var fwUl = $("<ul/>");
+    fwUl.attr("class", "no-bullets gpsiChild");
+    $(selectedFrameworks).each(function (i, fw) {
+        var cto = generateFrameworkLineItemHtmlGapSummaryCoverageText(fw);
+        var fwLi = $("<li/>");
+        var fwLiHtml = "<a onclick=\"toggleGapSummaryCompChild($(this))\">" +
+            "<i class=\"fa fa-chevron-circle-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>" +
+            "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildIDableString(fw.shortId().trim()) + "_psi" + "\" " +
+            "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(fw.shortId().trim()) + "',true)\">" +
+            fw.name.trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
+        fwLi.html(fwLiHtml);
+        var cpdToDisplay = gapDisplayHelperData.frameworkHelperMap[fw.shortId()].children;
+        buildGapSummaryFrameworkCompetencyList(fwLi,cpdToDisplay,"fa-ul",true);
+        fwUl.append(fwLi);
+    });
+    $(CIR_FCS_SUM_COMP_LIST_CTR).append(fwUl);
+}
+
+function buildGapSummaryCompetencyList() {
+    $(CIR_FCS_SUM_COMP_LIST_CTR).empty();
+    if (selectedFrameworks.length == 1) {
+        var cpdToDisplay = gapDisplayHelperData.gapHelper.children[0].children;
+        buildGapSummaryFrameworkCompetencyList($(CIR_FCS_SUM_COMP_LIST_CTR),cpdToDisplay,"no-bullets",false);
+    }
+    else if (selectedFrameworks.length > 1) buildGapSummaryMultiSelectedFrameworkCompetencyList();
+}
+
 function buildGapSummaryOverview() {
-    var numberOfComps = Object.keys(selectedFrameworkCompetencyData.competencyPacketDataMap).length;
+    var numberOfComps = Object.keys(selectedFrameworksCompetencyData.competencyPacketDataMap).length;
     $(CIR_FCS_SUM_NUM_COMPS).html(numberOfComps);
     var numCompsWithoutCoverage = countTotalNumberOfCompetenciesWithoutCoverage();
     var numberOfCompsCovered = (numberOfComps - numCompsWithoutCoverage);
@@ -734,7 +813,25 @@ function buildSelectedProfileList() {
     else if (selectedProfileType == GRP_PRF_TYPE) buildGroupSelectedProfileList();
 }
 
+function buildSelectedFrameworksList() {
+    if (selectedFrameworks.length == 1) {
+        setCircleFocusSummaryHeader(selectedFrameworks[0].getName());
+        $(CIR_FCS_SUM_SEL_FWK_LIST_CTR).hide();
+    }
+    else {
+        setCircleFocusSummaryHeader("Multi Framework Gap Analysis");
+        $(CIR_FCS_SUM_SEL_FWK_LIST).empty();
+        for (var i=0;i<selectedFrameworks.length;i++) {
+            var sfLi = $("<li/>");
+            sfLi.html("<span class=\"circleFocusOverviewField\">" + selectedFrameworks[i].getName() + "</span>");
+            $(CIR_FCS_SUM_SEL_FWK_LIST).append(sfLi);
+        }
+        $(CIR_FCS_SUM_SEL_FWK_LIST_CTR).show();
+    }
+}
+
 function buildGraphProfileSummary() {
+    buildSelectedFrameworksList();
     buildSelectedProfileList();
     buildGapSummaryOverview();
     buildGapSummaryCompetencyList();
@@ -777,8 +874,8 @@ function fillInGapContentsSearchAutoComplete() {
 function buildGapAnalysisDisplays() {
     showPageAsBusy("Building gap analysis display...");
     clearGapCircleSvg();
-    buildGapGraphCircles(null, JSON.parse(currentD3FrameworkNodeString));
-    markGapCompetencyNodes(currentD3FrameworkNode.children);
+    buildGapGraphCircles(null, JSON.parse(gapD3NodeString));
+    markGapNodes(gapDisplayHelperData.gapHelper);
     buildGraphProfileSummary();
     hideCircleSidebarDetails();
     showPageMainContentsContainer();
@@ -796,17 +893,18 @@ function buildGapAnalysisDisplays() {
 
 function prepForGapAnalysisDisplay() {
     showPageAsBusy("Processing gap data...");
-    selectedFrameworkCompetencyData = buildFrameworkCompetencyData(selectedFramework.shortId(),selectedFramework.getName(),selectedFrameworkNodePacketGraph,competencyAssertionMap);
+    selectedFrameworksCompetencyData = buildSelectedFrameworksCompetencyData(selectedFrameworksMap,selectedFrameworksNodePacketGraphMap,competencyAssertionMap);
     showPageAsBusy("Prepping framework display nodes...");
-    currentD3FrameworkNode = setUpD3FrameworkNodes(selectedFramework.getName(),selectedFrameworkCompetencyData);
-    currentD3FrameworkNodeString = buildD3JsonString(currentD3FrameworkNode);
-    debugMessage("selectedFrameworkCompetencyData");
-    debugMessage(selectedFrameworkCompetencyData);
-    debugMessage("currentD3FrameworkNode:");
-    debugMessage(currentD3FrameworkNode);
-    debugMessage("currentD3FrameworkNode JSON String:");
-    debugMessage(currentD3FrameworkNodeString);
+    gapDisplayHelperData = setUpD3SelectedFrameworkNodes(selectedFrameworksMap,selectedFrameworksCompetencyData);
+    gapD3NodeString = buildD3JsonString(gapDisplayHelperData.gapHelper);
+    debugMessage("selectedFrameworksCompetencyData");
+    debugMessage(selectedFrameworksCompetencyData);
+    debugMessage("gapDisplayHelperData:");
+    debugMessage(gapDisplayHelperData);
+    debugMessage("gapD3NodeString:");
+    debugMessage(gapD3NodeString);
     buildGapAnalysisDisplays();
+    hasFinishedLoading = true;
 }
 
 //**************************************************************************************************
@@ -814,8 +912,9 @@ function prepForGapAnalysisDisplay() {
 //**************************************************************************************************
 
 function buildGapAnalysisData() {
+    hasFinishedLoading = false;
     if (!haveSelectedProfilesBeenProcessed) fetchSelectedProfileAssertions();
-    else if (!hasSelectedFrameworkBeenProcessed) collapseSelectedFramework();
+    else if (!haveSelectedFrameworksBeenProcessed) collapseSelectedFrameworks();
     else prepForGapAnalysisDisplay();
 }
 
@@ -838,30 +937,67 @@ function frameworkCollapsedCorrectly(fnpg) {
     return true;
 }
 
-function handleCollapseFrameworkSuccess(frameworkId,fnpg) {
+function checkAllSelectedFrameworksCollapsed() {
+    if (frameworksCollapsed >= frameworksToCollapse) {
+        debugMessage("All frameworks collapsed..");
+        debugMessage(selectedFrameworksNodePacketGraphMap);
+        haveSelectedFrameworksBeenProcessed = true;
+        if (!collapseErrorTriggered) prepForGapAnalysisDisplay();
+    }
+}
+
+function handleCollapseFrameworkSuccess(frameworkId,fnpg,fwName) {
+    frameworksCollapsed++;
     debugMessage("Framework collapsed:" + frameworkId);
     debugMessage(fnpg);
     if (!frameworkCollapsedCorrectly(fnpg)) {
-        showPageError("Could not determine framework competencies.  Check framework permissions.<br><a onclick=\"openAddFrameworkModal()\">Try a Different Framework?</a>");
+        collapseErrorTriggered = true;
+        showPageError("Could not determine framework('" + fwName + "') competencies.  " +
+            "Check framework permissions.<br><a onclick=\"openAddFrameworkModal()\">Try a Different Framework?</a>");
+        checkAllSelectedFrameworksCollapsed();
     }
     else if (doesFrameworkHaveCircularDependency(fnpg)) {
+        collapseErrorTriggered = true;
         showFrameworkHasCircularDependencyWarning();
+        checkAllSelectedFrameworksCollapsed();
     }
     else {
-        hasSelectedFrameworkBeenProcessed = true;
-        selectedFrameworkNodePacketGraph = fnpg;
-        prepForGapAnalysisDisplay();
+        showPageAsBusy("Collapsing selected frameworks...(" + frameworksCollapsed + " of " + frameworksToCollapse + ")");
+        selectedFrameworksNodePacketGraphMap[frameworkId] = fnpg;
+        checkAllSelectedFrameworksCollapsed();
     }
 }
 
-function handleCollapseFrameworkFailure(err) {
-    showPageError("Could not collapse framework (" + selectedFramework.getName() + "): " + err);
+function handleCollapseFrameworkFailure(err,fwName) {
+    frameworksCollapsed++;
+    collapseErrorTriggered = true;
+    debugMessage("handleCollapseFrameworkFailure: " + err);
+    showPageError("Could not collapse framework (" + fwName + "): " + err);
+    checkAllSelectedFrameworksCollapsed();
 }
 
-function collapseSelectedFramework() {
-    showPageAsBusy("Collapsing selected framework...");
-    var fc = new FrameworkCollapser();
-    fc.collapseFramework(repo, selectedFramework, CREATE_IMPLIED_RELATIONS_ON_COLLAPSE, handleCollapseFrameworkSuccess, handleCollapseFrameworkFailure);
+function collapseSelectedFrameworks() {
+    frameworksToCollapse = Object.keys(selectedFrameworksMap).length;
+    frameworksCollapsed = 0;
+    collapseErrorTriggered = false;
+    selectedFrameworksNodePacketGraphMap = {};
+    showPageAsBusy("Collapsing selected frameworks...");
+    var fc;
+    for (var fid in selectedFrameworksMap) {
+        if (selectedFrameworksMap.hasOwnProperty(fid)) {
+            var fw = selectedFrameworksMap[fid];
+            fc = new FrameworkCollapser();
+            debugMessage("Collapsing framework: " + fw.shortId());
+            fc.collapseFramework(repo, fw, CREATE_IMPLIED_RELATIONS_ON_COLLAPSE,
+                function(frameworkId,fnpg) {
+                    handleCollapseFrameworkSuccess(frameworkId,fnpg,fw.getName());
+                },
+                function(err) {
+                    handleCollapseFrameworkFailure(err,fw.getName());
+                }
+            );
+        }
+    }
 }
 
 //**************************************************************************************************
@@ -902,7 +1038,7 @@ function processRelevantAssertions() {
         buildAssertionMaps();
     }
     haveSelectedProfilesBeenProcessed = true;
-    if (!hasSelectedFrameworkBeenProcessed) collapseSelectedFramework();
+    if (!haveSelectedFrameworksBeenProcessed) collapseSelectedFrameworks();
     else prepForGapAnalysisDisplay();
 }
 

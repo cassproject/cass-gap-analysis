@@ -48,6 +48,10 @@ const CIR_FCS_DTL_PROF_LIST = "#circleFocusDetailsProfList";
 // const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
 
 const CIR_FCS_SUM_HDR = "#circleFocusSummaryHeader";
+
+const CIR_FCS_SUM_SEL_FWK_LIST_CTR = "#circleFocusSummarySelFwkListCtr";
+const CIR_FCS_SUM_SEL_FWK_LIST = "#circleFocusSummarySelFwkList";
+
 const CIR_FCS_SUM_SEL_PROF_LIST = "#circleFocusSummarySelProfList";
 const CIR_FCS_SUM_NUM_COMPS = "#circleFocusSummaryNumComps";
 const CIR_FCS_SUM_COV = "#circleFocusSummaryCoverage";
@@ -304,6 +308,12 @@ function showGapWelcome() {
 
 function clearAllSearchBars() {
     $(GAP_CONT_SRCH_INPT).val("");
+}
+
+function goToDisplayRoot() {
+    if (hasFinishedLoading) {
+        zoomGapCgByD3NodeId(GAP_NODE_ROOT_NAME, true);
+    }
 }
 
 //**************************************************************************************************

@@ -201,7 +201,15 @@ input:checked~.switch-paddle {
     stroke-width: 1px;
 }
 
+.gapCircleGraph .fwkCircle {
+    fill:#999 !important;
+}
+
 /* ---- MISC ---- */
+
+#circleFocusSummaryHeader {
+    cursor: pointer;
+}
 
 .modal-large-multi-select {
     min-height: 15rem;
@@ -258,7 +266,6 @@ input:checked~.switch-paddle {
     margin-top: .5rem;
 }
 
-.circleFocusSummarySection,
 #circleFocusDetailsSidebar,
 #circleFocusSummarySidebar {
     margin-top: 1rem;

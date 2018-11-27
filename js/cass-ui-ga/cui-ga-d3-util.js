@@ -10,6 +10,7 @@ const GAP_CIRCLE_PACK_PADDING = 10;
 const GAP_CIRCLE_TEXT_LIMIT = 22;
 const GAP_CIRCLE_CLASS_PREFIX = "gap_cg_c_";
 const NO_ASSR_CLASS = "gapped";
+const FWK_CIR_CLASS = "fwkCircle";
 
 // Orange = Frameworks
 //.range(["rgba(206, 108, 24,0)", "rgba(206, 108, 24,1)"])
@@ -97,6 +98,17 @@ function markGapCompetencyNodes(cpdArray) {
                 $("."+cec).addClass(NO_ASSR_CLASS);
                 markGapCompetencyNodes(cpd.children);
             }
+        }
+    }
+}
+
+function markGapNodes(gapHelper) {
+    for (var i=0;i<gapHelper.children.length;i++) {
+        var fcd3n = gapHelper.children[i];
+        var fwec = generateGapCgCircleExtendedClass(fcd3n.id);
+        if (fwec) {
+            $("."+fwec).addClass(FWK_CIR_CLASS);
+            markGapCompetencyNodes(fcd3n.children);
         }
     }
 }

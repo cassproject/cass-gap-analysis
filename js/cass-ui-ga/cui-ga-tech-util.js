@@ -3,6 +3,11 @@
 //**************************************************************************************************
 
 //**************************************************************************************************
+// Constants
+
+const GAP_NODE_ROOT_NAME = "GAP_ANALYSIS_ROOT";
+
+//**************************************************************************************************
 // Data Structures
 //**************************************************************************************************
 function competencyPacketData(cassNodePacket) {
@@ -26,6 +31,7 @@ function competencyD3NodeTracker(id, isFramework) {
 }
 
 function frameworkCompetencyData() {
+    this.frameworkCompetencyPacketDataArrayMap = {};
     this.competencyPacketDataMap = {};
     this.competencyD3NodeTrackerMap = {};
 }
@@ -34,6 +40,11 @@ function d3CustomNode(nodeName) {
     this.id = nodeName;
     this.name = nodeName;
     this.children = [];
+}
+
+function gapDisplayHelperDataStrct() {
+    this.frameworkHelperMap = {};
+    this.gapHelper = new d3CustomNode(GAP_NODE_ROOT_NAME);
 }
 
 //**************************************************************************************************
@@ -49,23 +60,56 @@ function addD3Sizing(parentNode) {
         })
     }
 }
+//
+// function addRootCompetenciesToD3FrameworkNode(d3Fn,frameworkCompetencyData) {
+//     var fcdCompetencyPacketDataMap = frameworkCompetencyData.competencyPacketDataMap;
+//     for (var packetId in fcdCompetencyPacketDataMap) {
+//         if (fcdCompetencyPacketDataMap.hasOwnProperty(packetId)) {
+//             var cpd = fcdCompetencyPacketDataMap[packetId];
+//             if (cpd.parents.length <= 0) d3Fn.children.push(cpd);
+//         }
+//     }
+// }
 
-function addRootCompetenciesToD3FrameworkNode(d3Fn,frameworkCompetencyData) {
-    var fcdCompetencyPacketDataMap = frameworkCompetencyData.competencyPacketDataMap;
-    for (var packetId in fcdCompetencyPacketDataMap) {
-        if (fcdCompetencyPacketDataMap.hasOwnProperty(packetId)) {
-            var cpd = fcdCompetencyPacketDataMap[packetId];
-            if (cpd.parents.length <= 0) d3Fn.children.push(cpd);
+// function setUpD3FrameworkNodes(frameworkName,frameworkCompetencyData) {
+//     var d3Fn = new d3CustomNode(frameworkName);
+//     addRootCompetenciesToD3FrameworkNode(d3Fn,frameworkCompetencyData);
+//     addD3Sizing(d3Fn);
+//     return d3Fn;
+// }
+
+function buildD3FrameworkNode(frameworkId,frameworkName,fcd) {
+    if (frameworkName == null) return null;
+    var fd3cn = new d3CustomNode(frameworkName);
+    fd3cn.id = frameworkId;
+    var cpdArray = fcd.frameworkCompetencyPacketDataArrayMap[frameworkId];
+    $(cpdArray).each(function (i, cpd) {
+        if (cpd.parents.length <= 0) fd3cn.children.push(cpd);
+    });
+    addD3Sizing(fd3cn);
+    addFrameworkD3NodeTracker(fcd,frameworkId);
+    return fd3cn;
+}
+
+function setUpD3SelectedFrameworkNodes(fwkMap,fcd) {
+    var gdhd = new gapDisplayHelperDataStrct();
+    for (var fwkId in fwkMap) {
+        if (fwkMap.hasOwnProperty(fwkId)) {
+            var fw = fwkMap[fwkId];
+            debugMessage("Building D3 framework node for: " + fwkId);
+            var d3Fn = buildD3FrameworkNode(fwkId,fw.getName(),fcd);
+            if (d3Fn) {
+                if (d3Fn.children && d3Fn.children.length > 0) {
+                    gdhd.frameworkHelperMap[fw.shortId()] = d3Fn;
+                    gdhd.gapHelper.children.push(d3Fn);
+                }
+            }
         }
     }
+    addFrameworkD3NodeTracker(fcd,GAP_NODE_ROOT_NAME);
+    return gdhd;
 }
 
-function setUpD3FrameworkNodes(frameworkName,frameworkCompetencyData) {
-    var d3Fn = new d3CustomNode(frameworkName);
-    addRootCompetenciesToD3FrameworkNode(d3Fn,frameworkCompetencyData);
-    addD3Sizing(d3Fn);
-    return d3Fn;
-}
 
 function addFrameworkD3NodeTracker(fcd,frameworkName) {
     var fdt = new competencyD3NodeTracker(frameworkName,true);
@@ -93,49 +137,108 @@ function cassNodePacketHasAssertion(cassNodePacket, compAssrMap) {
     return false;
 }
 
-function getCompetencyPacketForNodePacket(fcd,nodePacket) {
-    return fcd.competencyPacketDataMap[generateIdFromCassNodePacket(nodePacket)];;
+// function getCompetencyPacketForNodePacket(fcd,nodePacket) {
+//     return fcd.competencyPacketDataMap[generateIdFromCassNodePacket(nodePacket)];;
+// }
+//
+// function parseCompetencyNodePacketRelations(fcd,fnpg) {
+//     var fnpgRelationList = fnpg.getRelationList();
+//     $(fnpgRelationList).each(function (i, fnpgRelation) {
+//         var sourcePacketData = getCompetencyPacketForNodePacket(fcd,fnpgRelation.getSource());
+//         var targetPacketData = getCompetencyPacketForNodePacket(fcd,fnpgRelation.getTarget());
+//         var relType = fnpgRelation.getType();
+//         if ("BROADENS" == relType.toString().toUpperCase() || "REQUIRES" == relType.toString().toUpperCase()) {
+//             if (!sourcePacketData.children.includes(targetPacketData)) sourcePacketData.children.push(targetPacketData);
+//             if (!targetPacketData.parents.includes(sourcePacketData)) targetPacketData.parents.push(sourcePacketData);
+//         }
+//         else if ("NARROWS" == relType.toString().toUpperCase() || "IS_REQUIRED_BY" == relType.toString().toUpperCase()) {
+//             if (!sourcePacketData.parents.includes(targetPacketData)) sourcePacketData.parents.push(targetPacketData);
+//             if (!targetPacketData.children.includes(sourcePacketData)) targetPacketData.children.push(sourcePacketData)
+//         }
+//     });
+// }
+
+function getCompetencyPacketForNodePacket(cpdMap, nodePacket) {
+    return cpdMap[generateIdFromCassNodePacket(nodePacket)];
 }
 
-function parseCompetencyNodePacketRelations(fcd,fnpg) {
+function addCompetencyPacketDataRelationships(cpdMap, fnpg) {
     var fnpgRelationList = fnpg.getRelationList();
     $(fnpgRelationList).each(function (i, fnpgRelation) {
-        var sourcePacketData = getCompetencyPacketForNodePacket(fcd,fnpgRelation.getSource());
-        var targetPacketData = getCompetencyPacketForNodePacket(fcd,fnpgRelation.getTarget());
+        var sourcePacketData = getCompetencyPacketForNodePacket(cpdMap, fnpgRelation.getSource());
+        var targetPacketData = getCompetencyPacketForNodePacket(cpdMap, fnpgRelation.getTarget());
         var relType = fnpgRelation.getType();
         if ("BROADENS" == relType.toString().toUpperCase() || "REQUIRES" == relType.toString().toUpperCase()) {
             if (!sourcePacketData.children.includes(targetPacketData)) sourcePacketData.children.push(targetPacketData);
             if (!targetPacketData.parents.includes(sourcePacketData)) targetPacketData.parents.push(sourcePacketData);
-        }
-        else if ("NARROWS" == relType.toString().toUpperCase() || "IS_REQUIRED_BY" == relType.toString().toUpperCase()) {
+        } else if ("NARROWS" == relType.toString().toUpperCase() || "IS_REQUIRED_BY" == relType.toString().toUpperCase()) {
             if (!sourcePacketData.parents.includes(targetPacketData)) sourcePacketData.parents.push(targetPacketData);
             if (!targetPacketData.children.includes(sourcePacketData)) targetPacketData.children.push(sourcePacketData)
         }
     });
 }
 
-function parseCompetencyNodePackets(fcd,fnpg,frameworkId,frameworkName,compAssrMap) {
-    var fnpgPacketList = fnpg.getNodePacketList();
-    $(fnpgPacketList).each(function (i, fnpgPacket) {
-        var packetId = generateIdFromCassNodePacket(fnpgPacket);
-        var packetName = generateNameFromCassNodePacket(fnpgPacket);
+// function parseCompetencyNodePackets(fcd,fnpg,frameworkId,frameworkName,compAssrMap) {
+//     var fnpgPacketList = fnpg.getNodePacketList();
+//     $(fnpgPacketList).each(function (i, fnpgPacket) {
+//         var packetId = generateIdFromCassNodePacket(fnpgPacket);
+//         var packetName = generateNameFromCassNodePacket(fnpgPacket);
+//         if (packetId && packetId.length > 0 && packetName && packetName.length > 0) {
+//             var cpd = new competencyPacketData(fnpgPacket);
+//             cpd.hasAssertion = cassNodePacketHasAssertion(fnpgPacket, compAssrMap);
+//             fcd.competencyPacketDataMap[packetId] = cpd;
+//             var cdt = new competencyD3NodeTracker(packetId,false);
+//             cdt.frameworkId = frameworkId;
+//             fcd.competencyD3NodeTrackerMap[packetId] = cdt;
+//         }
+//     });
+//     addFrameworkD3NodeTracker(fcd,frameworkName);
+// }
+
+function generateCompetencyPacketDataArray(fcd, fnpg, cpdMap, frameworkId, compAssrMap) {
+    var cpdArray = [];
+    var fnpgNodePacketList = fnpg.getNodePacketList();
+    $(fnpgNodePacketList).each(function (i, nodePacket) {
+        var packetId = generateIdFromCassNodePacket(nodePacket);
+        var packetName = generateNameFromCassNodePacket(nodePacket);
         if (packetId && packetId.length > 0 && packetName && packetName.length > 0) {
-            var cpd = new competencyPacketData(fnpgPacket);
-            cpd.hasAssertion = cassNodePacketHasAssertion(fnpgPacket, compAssrMap);
-            fcd.competencyPacketDataMap[packetId] = cpd;
+            var cpd = new competencyPacketData(nodePacket);
+            cpd.hasAssertion = cassNodePacketHasAssertion(nodePacket, compAssrMap);
+            cpdArray.push(cpd);
+            cpdMap[packetId] = cpd;
             var cdt = new competencyD3NodeTracker(packetId,false);
             cdt.frameworkId = frameworkId;
             fcd.competencyD3NodeTrackerMap[packetId] = cdt;
         }
     });
-    addFrameworkD3NodeTracker(fcd,frameworkName);
+    return cpdArray;
 }
 
-function buildFrameworkCompetencyData(frameworkId,frameworkName,fnpg,compAssrMap) {
+function buildFrameworkCompetencyData(fcd,frameworkId,fnpgMap,compAssrMap,competencyPacketDataMap) {
+    var fnpg = fnpgMap[frameworkId];
+    if (fnpg && fnpg != null) {
+        var cpdArray = generateCompetencyPacketDataArray(fcd, fnpg, competencyPacketDataMap, frameworkId, compAssrMap);
+        addCompetencyPacketDataRelationships(competencyPacketDataMap, fnpg);
+        fcd.frameworkCompetencyPacketDataArrayMap[frameworkId] = cpdArray;
+    }
+    else debugMessage("buildFrameworkCompetencyData - nodePacketGraph not found for: " + frameworkId);
+}
+
+function buildSelectedFrameworksCompetencyData(fwksMap,fnpgMap,compAssrMap) {
+    var cpdm = {};
     var fcd = new frameworkCompetencyData();
-    parseCompetencyNodePackets(fcd,fnpg,frameworkId,frameworkName,compAssrMap);
-    parseCompetencyNodePacketRelations(fcd,fnpg);
+    for (var fwId in fwksMap) {
+        var fw = fwksMap[fwId];
+        debugMessage("building selected framework competency data for: " + fw.shortId());
+        buildFrameworkCompetencyData(fcd,fwId,fnpgMap,compAssrMap,cpdm);
+    };
+    fcd.competencyPacketDataMap = cpdm;
     return fcd;
+    //
+    // var fcd = new frameworkCompetencyData();
+    // parseCompetencyNodePackets(fcd,fnpg,frameworkId,frameworkName,compAssrMap);
+    // parseCompetencyNodePacketRelations(fcd,fnpg);
+    // return fcd;
 }
 
 //**************************************************************************************************

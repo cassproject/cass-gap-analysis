@@ -9,9 +9,7 @@ const GAP_CIRCLE_PACK = "#gapCirclePack";
 const GAP_CIRCLE_PACK_PADDING = 10;
 const GAP_CIRCLE_TEXT_LIMIT = 22;
 const GAP_CIRCLE_CLASS_PREFIX = "gap_cg_c_";
-const NO_ASSR_CLASS_00 = "gapped_00";
-const NO_ASSR_CLASS_01 = "gapped_01";
-const NO_ASSR_CLASS_02 = "gapped_02";
+const NO_ASSR_CLASS = "gapped";
 const FWK_CIR_CLASS = "fwkCircle";
 
 // Orange = Frameworks
@@ -83,6 +81,16 @@ var gapCgColor = d3.scaleQuantize()
         ]
     );
 
+var gapCgGapColor = d3.scaleQuantize()
+    .domain([0, 2])
+    .range(
+        [
+            ORANGE_RANGE_1,
+            ORANGE_RANGE_3,
+            ORANGE_RANGE_2 
+        ]
+    );
+
 var gapCgPack = d3.pack()
     .size([gapCgDiameter - gapCgMargin, gapCgDiameter - gapCgMargin])
     .padding(GAP_CIRCLE_PACK_PADDING);
@@ -96,33 +104,17 @@ function markGapCompetencyNodes(cpdArray) {
         var cpd = cpdArray[i];
         if (!cpd.hasAssertion) {
             var cec = generateGapCgCircleExtendedClass(cpd.id);
-            var depth = getMarkedGapNodeDepth(cpd);
-            var classDepth = depth % 3;
             if (cec) {
-                if (classDepth == 0 ) {
-                  $("."+cec).addClass(NO_ASSR_CLASS_00);
-                } else if (classDepth == 1) {
-                 $("."+cec).addClass(NO_ASSR_CLASS_01);
-                } else {
-                  $("."+cec).addClass(NO_ASSR_CLASS_02);
-                }
-                markGapCompetencyNodes(cpd.children);
+              $("."+cec).addClass(NO_ASSR_CLASS);
+              
+              d3.selectAll("." + NO_ASSR_CLASS)
+               .style("fill", function (d) {
+                  return d ? gapCgGapColor(d.depth%3) : null;
+              })
+              markGapCompetencyNodes(cpd.children);
             }
         }
     }
-}
-
-function getMarkedGapNodeDepth(obj) {
-  var depth = 0;
-  if (obj.children) {
-      obj.children.forEach(function (d) {
-          var tmpDepth = getMarkedGapNodeDepth(d)
-          if (tmpDepth > depth) {
-              depth = tmpDepth
-          }
-        })
-    }
-    return 1 + depth     
 }
 
 function markGapNodes(gapHelper) {
@@ -131,6 +123,7 @@ function markGapNodes(gapHelper) {
         var fwec = generateGapCgCircleExtendedClass(fcd3n.id);
         if (fwec) {
             $("."+fwec).addClass(FWK_CIR_CLASS);
+    
             markGapCompetencyNodes(fcd3n.children);
         }
     }

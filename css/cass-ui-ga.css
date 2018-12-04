@@ -196,20 +196,9 @@ input:checked~.switch-paddle {
     pointer-events: all;
 }
 
-.gapCircleGraph .gapped_00 {
-    fill: #c56028 !important;
-    stroke-width: 1px;
+.gapCircleGraph .gapped {
 }
 
-.gapCircleGraph .gapped_01 {
-    fill: #eac4ac !important;
-    stroke-width: 1px;
-}
-
-.gapCircleGraph .gapped_02 {
-    fill: #e29e75 !important;
-    stroke-width: 1px;
-}
 
 
 .gapCircleGraph .fwkCircle {

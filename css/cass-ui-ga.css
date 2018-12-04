@@ -150,6 +150,7 @@ input:checked~.switch-paddle {
 
 .gapCircleGraph .node {
     cursor: pointer;
+    filter:url(#drop-shadow);
 }
 
 .gapCircleGraph .node:hover {
@@ -165,11 +166,11 @@ input:checked~.switch-paddle {
 
 .gapCircleGraph .label {
     fill: #fff;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 600;
     text-anchor: middle;
     paint-order: stroke;
     stroke: rgb(0, 0, 0);
-    stroke-width: 2px;
     stroke-linecap: butt;
     stroke-linejoin: round;
 }
@@ -196,17 +197,17 @@ input:checked~.switch-paddle {
 }
 
 .gapCircleGraph .gapped_00 {
-    fill:#c56028 !important;
+    fill: #c56028 !important;
     stroke-width: 1px;
 }
 
 .gapCircleGraph .gapped_01 {
-    fill:#eac4ac !important;
+    fill: #eac4ac !important;
     stroke-width: 1px;
 }
 
 .gapCircleGraph .gapped_02 {
-    fill:#e29e75 !important;
+    fill: #e29e75 !important;
     stroke-width: 1px;
 }
 

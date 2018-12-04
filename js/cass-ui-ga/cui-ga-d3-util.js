@@ -9,7 +9,9 @@ const GAP_CIRCLE_PACK = "#gapCirclePack";
 const GAP_CIRCLE_PACK_PADDING = 10;
 const GAP_CIRCLE_TEXT_LIMIT = 22;
 const GAP_CIRCLE_CLASS_PREFIX = "gap_cg_c_";
-const NO_ASSR_CLASS = "gapped";
+const NO_ASSR_CLASS_00 = "gapped_00";
+const NO_ASSR_CLASS_01 = "gapped_01";
+const NO_ASSR_CLASS_02 = "gapped_02";
 const FWK_CIR_CLASS = "fwkCircle";
 
 // Orange = Frameworks
@@ -47,9 +49,9 @@ const BLUE_RANGE_1 = "rgba(13,78,103,1)"
 
 /* blue pallette, contrast reduced 35% */
 const ORANGE_RANGE_0 = "rgba(219,143,98,0)";
-const ORANGE_RANGE_2 = "rgba(219,143,98, 1)";
-const ORANGE_RANGE_3 = "rgba(227,174,140,1)";
-const ORANGE_RANGE_1 = "rgba(199,96,40,1)";
+const ORANGE_RANGE_2 = "rgba(226,158,117, 1)";
+const ORANGE_RANGE_3 = "rgba(294,196,172,1)";
+const ORANGE_RANGE_1 = "rgba(197,96,40,1)";
 
 //**************************************************************************************************
 // Variables
@@ -94,12 +96,33 @@ function markGapCompetencyNodes(cpdArray) {
         var cpd = cpdArray[i];
         if (!cpd.hasAssertion) {
             var cec = generateGapCgCircleExtendedClass(cpd.id);
+            var depth = getMarkedGapNodeDepth(cpd);
+            var classDepth = depth % 3;
             if (cec) {
-                $("."+cec).addClass(NO_ASSR_CLASS);
+                if (classDepth == 0 ) {
+                  $("."+cec).addClass(NO_ASSR_CLASS_00);
+                } else if (classDepth == 1) {
+                 $("."+cec).addClass(NO_ASSR_CLASS_01);
+                } else {
+                  $("."+cec).addClass(NO_ASSR_CLASS_02);
+                }
                 markGapCompetencyNodes(cpd.children);
             }
         }
     }
+}
+
+function getMarkedGapNodeDepth(obj) {
+  var depth = 0;
+  if (obj.children) {
+      obj.children.forEach(function (d) {
+          var tmpDepth = getMarkedGapNodeDepth(d)
+          if (tmpDepth > depth) {
+              depth = tmpDepth
+          }
+        })
+    }
+    return 1 + depth     
 }
 
 function markGapNodes(gapHelper) {
@@ -418,21 +441,6 @@ function buildGapGraphCircles(error, root) {
             d3.event.stopPropagation();
         });
 
-
-    /*****************************************************
-     testing adding a rectangle svg behind text
-
-     var rect = gapCirclePackGraph.selectAll("rect")
-     .data(nodes)
-     .enter()
-     .append("rect")
-     .attr("width", 20)
-     .attr("height", 20)
-     .style("fill", "#ccc")
-     .style("fill-opacity", ".3")
-     .style("stroke", "#666")
-     .style("stroke-width", "1.5px");
-     ***************************************************/
 
 
     var text = gapCirclePackGraph.selectAll("text")

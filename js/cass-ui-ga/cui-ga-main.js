@@ -567,8 +567,8 @@ function expandGapSummaryToObject(expObj) {
         expObj.attr("style", "display:block");
         if (expObj.parent().children().eq(0) && expObj.parent().children().eq(0).find("i:first")) {
             var ic = expObj.parent().children().eq(0).find("i:first");
-            if (ic && (ic.hasClass("fa-chevron-circle-down") || ic.hasClass("fa-chevron-circle-right"))) {
-                ic.attr("class", "fa fa-chevron-circle-down");
+            if (ic && (ic.hasClass("fa-chevron-down") || ic.hasClass("fa-chevron-right"))) {
+                ic.attr("class", "fa fa-chevron-down");
             }
         }
         if (expObj.parent() && expObj.parent().parent()) {
@@ -617,11 +617,11 @@ function buildGapSummaryCompItemElementId(compNode) {
 
 //TODO toggleGapSummaryCompChild figure out bug with this
 function toggleGapSummaryCompChild(ce) {
-    if (ce.find('i:first').hasClass("fa-chevron-circle-right")) {
-        ce.find('i:first').attr("class", "fa fa-chevron-circle-down");
+    if (ce.find('i:first').hasClass("fa-chevron-right")) {
+        ce.find('i:first').attr("class", "fa fa-chevron-down");
         ce.parent().find('ul:first').attr("style", "display:block");
     } else {
-        ce.find('i:first').attr("class", "fa fa-chevron-circle-right");
+        ce.find('i:first').attr("class", "fa fa-chevron-right");
         ce.parent().find('ul:first').attr("style", "display:none");
     }
 }
@@ -645,7 +645,7 @@ function generateCompetencyLineItemHtmlGapSummaryCoverageText(compNode) {
 function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildren) {
     var liHtml = "";
     if (hasChildren) {
-        liHtml += "<a onclick=\"toggleGapSummaryCompChild($(this))\"><i class=\"fa fa-chevron-circle-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>";
+        liHtml += "<a onclick=\"toggleGapSummaryCompChild($(this))\"><i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>";
     }
     else {
         liHtml += "<i class=\"fa fa-circle " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i>";
@@ -714,7 +714,7 @@ function buildGapSummaryMultiSelectedFrameworkCompetencyList() {
         var cto = generateFrameworkLineItemHtmlGapSummaryCoverageText(fw);
         var fwLi = $("<li/>");
         var fwLiHtml = "<a onclick=\"toggleGapSummaryCompChild($(this))\">" +
-            "<i class=\"fa fa-chevron-circle-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>" +
+            "<i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>" +
             "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildIDableString(fw.shortId().trim()) + "_psi" + "\" " +
             "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(fw.shortId().trim()) + "',true)\">" +
             fw.name.trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";

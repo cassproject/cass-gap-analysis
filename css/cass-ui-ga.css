@@ -1,3 +1,113 @@
+
+@font-face {
+    font-family: 'oswaldbold';
+    src: url('../fonts/Oswald/oswald-bold.woff2') format('woff2'),
+         url('../fonts/Oswald/oswald-bold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'oswaldextralight';
+    src: url('../fonts/Oswald/oswald-extralight.woff2') format('woff2'),
+         url('../fonts/Oswald/oswald-extralight.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'oswaldlight';
+    src: url('../fonts/Oswald/oswald-light.woff2') format('woff2'),
+         url('../fonts/Oswald/oswald-light.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'oswaldmedium';
+    src: url('../fonts/Oswald/oswald-medium.woff2') format('woff2'),
+         url('../fonts/Oswald/oswald-medium.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'oswaldregular';
+    src: url('../fonts/Oswald/oswald-regular.woff2') format('woff2'),
+         url('../fonts/Oswald/oswald-regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'oswaldsemibold';
+    src: url('../fonts/Oswald/oswald-semibold.woff2') format('woff2'),
+         url('../fonts/Oswald/oswald-semibold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+
+@font-face {
+    font-family: 'assistantbold';
+    src: url('../fonts/Assistant/assistant-bold.woff2') format('woff2'),
+         url('../fonts/Assistant/assistant-bold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'assistantextrabold';
+    src: url('../fonts/Assistant/assistant-extrabold.woff2') format('woff2'),
+         url('../fonts/Assistant/assistant-extrabold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'assistantextralight';
+    src: url('../fonts/Assistant/assistant-extralight.woff2') format('woff2'),
+         url('../fonts/Assistant/assistant-extralight.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+@font-face {
+    font-family: 'assistantlight';
+    src: url('../fonts/Assistant/assistant-light.woff2') format('woff2'),
+         url('../fonts/Assistant/assistant-light.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'assistantregular';
+    src: url('../fonts/Assistant/assistant-regular.woff2') format('woff2'),
+         url('../fonts/Assistant/assistant-regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'assistantsemibold';
+    src: url('../fonts/Assistant/assistant-semibold.woff2') format('woff2'),
+         url('../fonts/Assistant/assistant-semibold.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+  --main-body-font: 'assistantregular';
+  --main-header-font: 'oswaldregular';
+}
 html,
 body {
     /* Dynamically resize for large screens */
@@ -5,9 +115,17 @@ body {
     /* Scale background to fit the screen */
     min-height: 100%;
     min-width: 100%;
+    font-family: var(--main-body-font);
 }
 
+
+
 /* ---- UTILITY ---- */
+h3, h4, h5 {
+  font-family: var(--main-header-font);
+}
+
+
 tspan{
     pointer-events: none;
 }
@@ -30,11 +148,14 @@ tspan{
 }
 
 ul.no-bullets {
-    margin-left: 0;
+    margin-left: .5rem;
 }
 
 ul.no-bullets li {
-    list-style: none;
+  list-style: none;
+  font-size: 1rem;
+  margin-top: 2px;
+
 }
 
 input:checked~.switch-paddle {
@@ -202,13 +323,14 @@ input:checked~.switch-paddle {
 
 
 .gapCircleGraph .fwkCircle {
-    fill:#999 !important;
+    fill:#c7c7c7 !important;
 }
 
 /* ---- MISC ---- */
 
 #circleFocusSummaryHeader {
     cursor: pointer;
+  font-size: 1.8rem;
 }
 
 .modal-large-multi-select {
@@ -216,7 +338,8 @@ input:checked~.switch-paddle {
 }
 
 #gapHeader {
-    color: #137499;
+  color: #333;
+  font-family: var(--main-header-font);
 }
 
 #gapWelcomeContainer {
@@ -251,7 +374,10 @@ input:checked~.switch-paddle {
 }
 
 .circleFocusSummarySubSection {
-    margin-left:1rem;
+    margin-left:.5rem;
+}
+.circleFocusSummarySubSection div {
+  margin-top: 4px;
 }
 
 #circleFocusDetailsSingleDesc {
@@ -294,14 +420,30 @@ input:checked~.switch-paddle {
 }
 
 .gpsiRootComp {
-    font-size: 1.05rem;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
+
+
 
 .gpsiNonRootComp {}
 
 .gpsiChild {
-    margin-left: 1.2rem;
-    font-size: 1rem;
+  margin-left: .8rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.gpsiChild:first-child {
+  margin-left: 0rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.fa-chevron-right,
+.fa-chevron-down,
+.fa-circle {
+  font-size: .8rem;
+  color: #137499;
 }
 
 .psiItem.active {

@@ -99,7 +99,7 @@ $(document).ready(function () {
     else frameworkToOpen = null;
     if (queryParams.user == "wait") {
         debugMessage("Received user='wait' parameter...");
-        showPageAsBusy("Initializing Framework Explorer...");
+        showPageAsBusy("Initializing Gap Analysis...");
         sendWaitingMessage();
     }
     else {

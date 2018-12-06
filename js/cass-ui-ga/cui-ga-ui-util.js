@@ -44,8 +44,9 @@ const CIR_FCS_DTL_SING_NAME = "#circleFocusDetailsSingleName";
 const CIR_FCS_DTL_SING_DESC = "#circleFocusDetailsSingleDesc";
 const CIR_FCS_DTL_PROF_LIST_CTR = "#circleFocusDetailsProfListContainer";
 const CIR_FCS_DTL_PROF_LIST = "#circleFocusDetailsProfList";
-// const CIR_FCS_COMP_TOOLS = "#circleFocusCompTools";
-// const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
+const CIR_FCS_COMP_TOOLS = "#circleFocusCompTools";
+const CIR_FCS_DTL_COMP_DTL_LINK = "#circleFocusCompDetailsLink";
+const CIR_FCS_GAP_REP_LINK = "#circleFocusGapReportLink";
 
 const CIR_FCS_SUM_HDR = "#circleFocusSummaryHeader";
 
@@ -68,6 +69,8 @@ const ADD_PRF_TYPE_SELECT = "#addProfTypeSelect";
 const ADD_PRF_RES_FLTR = "#addProfResultsFilter";
 const ADD_PRF_RES_SELECT = "#addProfResultsSelect";
 const ADD_PRF_RES_DESC = "#addProfResultsDesc";
+const ADD_PRF_SAVE_SEL_PRF_GRP_BTN = "#addProfSaveSelectedProfsAsGroupBtn";
+const ADD_PRF_EDIT_GRP_BTN = "#addProfEditGroupsBtn";
 
 //Add Frameworks Modal
 const ADD_FWK_MODAL = "#modal-framework-select";
@@ -75,6 +78,13 @@ const ADD_FWK_FLTR_TYPE_SELECT = "#addFwkFilterTypeSelect";
 const ADD_FWK_RES_FLTR = "#addFwkResultsFilter";
 const ADD_FWK_RES_SELECT = "#addFwkResultsSelect";
 const ADD_FWK_RES_DESC = "#addFwkResultsDesc";
+
+//Gap Analysis Report Modal
+const GAP_REP_MODAL = "#modal-gap-report";
+
+//Competency Details Modal
+const COMP_DTL_MODAL = "#modal-competency-inf";
+const COMP_DTL_COMP_NAME = "#compDetCompName";
 
 //**************************************************************************************************
 // Variables

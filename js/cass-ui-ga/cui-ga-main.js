@@ -95,6 +95,12 @@ function getFrameworkName(frameworkId) {
     else return "Framework not found";
 }
 
+function getFrameworkDescription(frameworkId) {
+    var fw = frameworkIdFrameworkMap[frameworkId];
+    if (fw) return fw.description;
+    else return "Framework not found";
+}
+
 function isFrameworkId(id) {
     var x = selectedFrameworksMap[id];
     if (x) return true;
@@ -448,10 +454,14 @@ function fillInAddProfResults(profType) {
     $(ADD_PRF_RES_SELECT).empty();
     $(ADD_PRF_RES_FLTR).val("");
     if (profType == IND_PRF_TYPE) {
+        $(ADD_PRF_EDIT_GRP_BTN).hide();
+        $(ADD_PRF_SAVE_SEL_PRF_GRP_BTN).show();
         setAddProfResultsDesc("All Individuals");
         fillInAddProfIndividualsResults();
     }
     else if (profType == GRP_PRF_TYPE) {
+        $(ADD_PRF_SAVE_SEL_PRF_GRP_BTN).hide();
+        $(ADD_PRF_EDIT_GRP_BTN).show();
         setAddProfResultsDesc("All Groups");
         fillInAddProfGroupResults();
     }
@@ -473,6 +483,16 @@ function openAddProfileModal() {
     $(ADD_PRF_TYPE_SELECT).val(IND_PRF_TYPE);
     fillInAddProfResults(IND_PRF_TYPE);
     $(ADD_PRF_MODAL).foundation('open');
+}
+
+//**************************************************************************************************
+// Gap Analysis Report Modal
+//**************************************************************************************************
+function openGapAnalysisReportModal() {
+    hideModalError(GAP_REP_MODAL);
+    hideModalBusy(GAP_REP_MODAL);
+    enableModalInputsAndButtons();
+    $(GAP_REP_MODAL).foundation('open');
 }
 
 //**************************************************************************************************
@@ -536,6 +556,30 @@ function buildSidebarDetailsProfileList(cpd) {
     }
 }
 
+function showGapGraphSidebarFrameworkNodeDetails(frameworkId) {
+    $(CIR_FCS_DTL_SING_NAME).html(getFrameworkName(frameworkId));
+    $(CIR_FCS_DTL_SING_DESC).html(getFrameworkDescription(frameworkId));
+    $(CIR_FCS_DTL_PROF_LIST_CTR).hide();
+    $(CIR_FCS_DTL_COMP_DTL_LINK).hide();
+    showCircleSidebarDetails();
+    scrollFrameworkGapSummary(frameworkId);
+}
+
+function showGapGraphSidebarMultiNodePacketDetails(cpd) {
+    alert("TODO: Build details for multi competency node package");
+}
+
+function showGapGraphSidebarSingleNodePacketDetails(cpd) {
+    $(CIR_FCS_DTL_SING_NAME).html(cpd.name);
+    $(CIR_FCS_DTL_SING_DESC).html(cpd.description);
+    buildSidebarDetailsProfileList(cpd);
+    $(CIR_FCS_DTL_COMP_DTL_LINK).show();
+    //TODO enable the details button
+    showCircleSidebarDetails();
+    var compNode = cpd.cassNodePacket.getNodeList()[0];
+    scrollCompNodeInGapSummary(compNode);
+}
+
 //TODO showCircleGraphSidebarDetails handle multi node packets
 function showCircleGraphSidebarDetails(compId) {
     hideCircleSidebarDetails();
@@ -543,17 +587,15 @@ function showCircleGraphSidebarDetails(compId) {
     if (!compId || compId == null || compId == GAP_NODE_ROOT_NAME) {
         return;
     }
-    else if (isFrameworkId(compId)) scrollFrameworkGapSummary(compId);
+    else if (isFrameworkId(compId)) showGapGraphSidebarFrameworkNodeDetails(compId);
     else {
         var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[compId];
         if (!cpd || cpd == null) debugMessage("Cannot locate competency data for: " + compId);
         else {
-            $(CIR_FCS_DTL_SING_NAME).html(cpd.name);
-            $(CIR_FCS_DTL_SING_DESC).html(cpd.description);
-            buildSidebarDetailsProfileList(cpd);
-            showCircleSidebarDetails();
-            var compNode = cpd.cassNodePacket.getNodeList()[0];
-            scrollCompNodeInGapSummary(compNode);
+            if (!cpd.cassNodePacket || cpd.cassNodePacket == null) debugMessage("cpt.cassNodePacket is null: " + compId);
+            else if (!cpd.cassNodePacket.getNodeList() || cpd.cassNodePacket.getNodeList() == null) debugMessage("cpt.cassNodePacket.getNodePacketList() is null: " + compId);
+            else if (cpd.cassNodePacket.getNodeList().length == 1) showGapGraphSidebarSingleNodePacketDetails(cpd);
+            else showGapGraphSidebarMultiNodePacketDetails(cpd);
         }
     }
 }

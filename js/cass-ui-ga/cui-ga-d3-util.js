@@ -374,7 +374,7 @@ function buildGapGraphCircles(error, root) {
 
     registerGapD3DetailNodes(nodes);
 
-
+  
     /************************************
      drop shadow filter details
      needed here to apply to gapCgCircl
@@ -392,25 +392,21 @@ function buildGapGraphCircles(error, root) {
         .attr("in", "blur")
         .attr("dx", .5)
         .attr("dy", .5)
-        .attr("result", "offsetBlur");
+        .attr("result", "offsetBlur");  
+    var feComponentTransfer = filter.append("feComponentTransfer")
+      .attr("in", "offsetBlur")
+      .attr("result", "linearSlope");
+      feComponentTransfer.append("feFuncA")
+          .attr("type", "linear")
+          .attr("slope", "0.6");
+
     //important for opacity reduction on filter
-    var feComponentTransfer = filter.append("feComponentTransfer");
-    feComponentTransfer.append("feFuncA")
-        .attr("in", "offsetBlur")
-        .attr("type", "linear")
-        .attr("slope", ".6")
-        .attr("result", "opacityBlur");
-    filter.append("feComposite")
-        .attr("operator", "out")
-        .attr("in", "sourceGraphic");
     // important for allowing manipulation of hover
     var feMerge = filter.append("feMerge");
     feMerge.append("feMergeNode")
-        .attr("in", "opacityBlur")
+        .attr("in", "linearSlope")
     feMerge.append("feMergeNode")
         .attr("in", "SourceGraphic");
-
-
     gapCgCircle = gapCirclePackGraph.selectAll("circle")
         .data(nodes)
         .enter().append("circle")

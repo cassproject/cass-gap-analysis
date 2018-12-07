@@ -171,8 +171,8 @@
                                     <h3 id="circleFocusDetailsSingleName"></h3>
                                 </div>
                                 <div id="circleFocusCompTools" class="cell medium-2">
-                                    <!--<i id="circleFocusCompConfIcon" class="fa fa-signal" title="Confidence" aria-hidden="true"></i>&nbsp;-->
-                                    <!--<a id="circleFocusCompDetailsLink"><i class="fa fa-info-circle" title="Show more details" aria-hidden="true"></i></a>-->
+                                    <a id="circleFocusCompDetailsLink"><i class="fa fa-info-circle" title="Show more details" aria-hidden="true"></i></a>
+                                    <a id="circleFocusGapReportLink" onclick="openGapAnalysisReportModal()"><i class="fa fa-cogs" title="Run gap analysis reports" aria-hidden="true"></i></a>
                                 </div>
                             </div>
                             <p id="circleFocusDetailsSingleDesc" class="lead"></p>
@@ -199,7 +199,7 @@
                 </select>
             </div>
             <div class="cell medium-6">
-                <input onkeyup="filterAddProfResults()" id="addProfResultsFilter" type="text" placeholder="Filter these results">
+                <input onkeyup="filterAddProfResults()" id="addProfResultsFilter" type="text" placeholder="Filter these results" style="display:none;">
             </div>
             <div class="cell medium-12">
                 <label><span id="addProfResultsDesc"></span>
@@ -208,6 +208,9 @@
             </div>
             <div class="cell medium-12">
                 <button class="button cassUiModalButton" onclick="addSelectedProfiles();">Add</button>
+                &nbsp;&nbsp;
+                <button class="button cassUiModalButtonDisabled" id="addProfSaveSelectedProfsAsGroupBtn" disabled="disabled">Save Selected and Add</button>
+                <button class="button cassUiModalButtonDisabled" id="addProfEditGroupsBtn"  disabled="disabled" style="display:none">Edit Groups</button>
                 &nbsp;&nbsp;
                 <button class="button secondary cassUiModalButton" data-close>Cancel</button>
             </div>
@@ -242,13 +245,13 @@
     <div class="reveal large" id="modal-framework-select" data-reveal>
         <h3><i class="fa fa-sitemap" aria-hidden="true"></i> Framework Selection</h3>
         <div class="grid-x grid-padding-x">
-            <div class="cell medium-6">
+            <div class="cell medium-6" style="display: none">
                 <select id="addFwkFilterTypeSelect" onchange="changeAddFwkFilterType()">
                     <option value="title">Title</option>
                     <option value="desc">Description</option>
                 </select>
             </div>
-            <div class="cell medium-6">
+            <div class="cell medium-6" style="display: none">
                 <input onkeyup="filterAddFwkResults()" id="addFwkResultsFilter" type="text" placeholder="Filter these results">
             </div>
             <div class="cell medium-12">
@@ -287,6 +290,64 @@
             <span aria-hidden="true">&times;</span>
         </button>
     </div>
+
+
+    <div class="reveal large" id="modal-gap-report" data-reveal>
+        <h3><i class="fa fa-cogs" aria-hidden="true"></i> Gap Analysis Reports</h3>
+        <div class="grid-x">
+            <div class="cell cassUiModalBusyCtr" style="display:none">
+                <div class="grid-container">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-12 text-center">
+                            <h5 class="cassUiModalBusyText"></h5>
+                            <img class="cassUiBusyImg" src="img/CASS-loading-64px.gif" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell cassUiModalErrorCtr" style="display:none">
+                <div class="grid-container">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-12 text-center cassUiError">
+                            <h5><i class="fa fa-exclamation-triangle"></i> <span class="cassUiModalErrorText"></span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="close-button" data-close aria-label="Close reveal" type="button">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="reveal large" id="modal-competency-info" data-reveal>
+        <h3><i class="fa fa-info-circle" aria-hidden="true"></i> <span id="compDetCompName">Competency Details</span></h3>
+        <div class="grid-x">
+            <div class="cell cassUiModalBusyCtr" style="display:none">
+                <div class="grid-container">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-12 text-center">
+                            <h5 class="cassUiModalBusyText"></h5>
+                            <img class="cassUiBusyImg" src="img/CASS-loading-64px.gif" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell cassUiModalErrorCtr" style="display:none">
+                <div class="grid-container">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-12 text-center cassUiError">
+                            <h5><i class="fa fa-exclamation-triangle"></i> <span class="cassUiModalErrorText"></span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="close-button" data-close aria-label="Close reveal" type="button">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <!-- END MODAL WINDOWS -->
 
     <script src="js/vendor/jquery.js"></script>

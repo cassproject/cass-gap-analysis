@@ -326,6 +326,16 @@ function goToDisplayRoot() {
     }
 }
 
+function getStringVal(f) {
+    if (!f) return "";
+    else if (typeof f === 'string' || f instanceof String) return f;
+    else if (Array.isArray(f)) {
+        if (f.length >= 1) return f[0];
+        else return "";
+    }
+    else return "";
+}
+
 //**************************************************************************************************
 // JQuery Functions
 //**************************************************************************************************

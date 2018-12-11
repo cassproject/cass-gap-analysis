@@ -91,13 +91,13 @@ function initializeSelectedDataPoints() {
 
 function getFrameworkName(frameworkId) {
     var fw = frameworkIdFrameworkMap[frameworkId];
-    if (fw) return fw.getName();
+    if (fw) return getStringVal(fw.getName());
     else return "Framework not found";
 }
 
 function getFrameworkDescription(frameworkId) {
     var fw = frameworkIdFrameworkMap[frameworkId];
-    if (fw) return fw.getDescription();
+    if (fw) return getStringVal(fw.getDescription());
     else return "Framework not found";
 }
 
@@ -264,7 +264,7 @@ function parseSelectedFramework(selectedFwks) {
             selectedFrameworks.push(f);
         }
     }
-    selectedFrameworks.sort(function(a, b) {return a.getName().localeCompare(b.getName());});
+    selectedFrameworks.sort(function(a, b) {return getStringVal(a.getName()).localeCompare(getStringVal(b.getName()));});
 }
 
 function addSelectedFrameworks() {
@@ -311,7 +311,7 @@ function fillInAddFwkResults() {
     setAddFwkResultsDesc("All Frameworks");
     for (var i=0;i<availableFrameworkList.length;i++) {
         var f = availableFrameworkList[i];
-        $('<option>').val(buildIDableString(f.shortId())).text(f.getName()).appendTo(ADD_FWK_RES_SELECT);
+        $('<option>').val(buildIDableString(f.shortId())).text(getStringVal(f.getName())).appendTo(ADD_FWK_RES_SELECT);
     }
 }
 
@@ -857,7 +857,7 @@ function buildSelectedProfileList() {
 
 function buildSelectedFrameworksList() {
     if (selectedFrameworks.length == 1) {
-        setCircleFocusSummaryHeader(selectedFrameworks[0].getName());
+        setCircleFocusSummaryHeader(getStringVal(selectedFrameworks[0].getName()));
         $(CIR_FCS_SUM_SEL_FWK_LIST_CTR).hide();
     }
     else {
@@ -865,7 +865,7 @@ function buildSelectedFrameworksList() {
         $(CIR_FCS_SUM_SEL_FWK_LIST).empty();
         for (var i=0;i<selectedFrameworks.length;i++) {
             var sfLi = $("<li/>");
-            sfLi.html("<span class=\"circleFocusOverviewField\">" + selectedFrameworks[i].getName() + "</span>");
+            sfLi.html("<span class=\"circleFocusOverviewField\">" + getStringVal(selectedFrameworks[i].getName()) + "</span>");
             $(CIR_FCS_SUM_SEL_FWK_LIST).append(sfLi);
         }
         $(CIR_FCS_SUM_SEL_FWK_LIST_CTR).show();
@@ -1032,10 +1032,10 @@ function collapseSelectedFrameworks() {
             debugMessage("Collapsing framework: " + fw.shortId());
             fc.collapseFramework(repo, fw, CREATE_IMPLIED_RELATIONS_ON_COLLAPSE,
                 function(frameworkId,fnpg) {
-                    handleCollapseFrameworkSuccess(frameworkId,fnpg,fw.getName());
+                    handleCollapseFrameworkSuccess(frameworkId,fnpg,getStringVal(fw.getName()));
                 },
                 function(err) {
-                    handleCollapseFrameworkFailure(err,fw.getName());
+                    handleCollapseFrameworkFailure(err,getStringVal(fw.getName()));
                 }
             );
         }
@@ -1208,8 +1208,8 @@ function fetchSelectedProfileAssertions() {
 
 function createSortedAvailableFrameworkList(ownedFrameworkList,unownedFrameworkList) {
     availableFrameworkList = [];
-    ownedFrameworkList.sort(function (a, b) {return a.getName().localeCompare(b.getName());});
-    unownedFrameworkList.sort(function (a, b) {return a.getName().localeCompare(b.getName());});
+    ownedFrameworkList.sort(function (a, b) {return getStringVal(a.getName()).localeCompare(getStringVal(b.getName()));});
+    unownedFrameworkList.sort(function (a, b) {return getStringVal(a.getName()).localeCompare(getStringVal(b.getName()));});
     for (var i=0;i<ownedFrameworkList.length;i++) {
         availableFrameworkList.push(ownedFrameworkList[i]);
     }
@@ -1225,12 +1225,12 @@ function buildFrameworkLists(arrayOfEcFrameworks) {
     for (var i=0;i<arrayOfEcFrameworks.length;i++) {
         var cecf = arrayOfEcFrameworks[i];
         try {
-            if (cecf && cecf.getName() && cecf.getName().trim().length > 0) {
+            if (cecf && cecf.getName() && getStringVal(cecf.getName()).trim().length > 0) {
                 frameworkIdFrameworkMap[cecf.shortId()] = cecf;
-                if (!frameworkNameFrameworkMap[cecf.getName().trim()]) {
-                    frameworkNameFrameworkMap[cecf.getName().trim()] = [];
+                if (!frameworkNameFrameworkMap[getStringVal(cecf.getName()).trim()]) {
+                    frameworkNameFrameworkMap[getStringVal(cecf.getName()).trim()] = [];
                 }
-                frameworkNameFrameworkMap[cecf.getName().trim()].push(cecf);
+                frameworkNameFrameworkMap[getStringVal(cecf.getName()).trim()].push(cecf);
                 if (cecf.hasOwner(loggedInPk)) {
                     ownedFrameworkList.push(cecf);
                 }

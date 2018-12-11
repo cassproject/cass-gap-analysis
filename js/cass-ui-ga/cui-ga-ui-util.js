@@ -69,8 +69,6 @@ const ADD_PRF_TYPE_SELECT = "#addProfTypeSelect";
 const ADD_PRF_RES_FLTR = "#addProfResultsFilter";
 const ADD_PRF_RES_SELECT = "#addProfResultsSelect";
 const ADD_PRF_RES_DESC = "#addProfResultsDesc";
-const ADD_PRF_SAVE_SEL_PRF_GRP_BTN = "#addProfSaveSelectedProfsAsGroupBtn";
-const ADD_PRF_EDIT_GRP_BTN = "#addProfEditGroupsBtn";
 
 //Add Frameworks Modal
 const ADD_FWK_MODAL = "#modal-framework-select";
@@ -81,6 +79,10 @@ const ADD_FWK_RES_DESC = "#addFwkResultsDesc";
 
 //Gap Analysis Report Modal
 const GAP_REP_MODAL = "#modal-gap-report";
+const GAP_REP_DESC = "#gapReportDesc";
+const GAP_REP_COV_SUM = "#gapReportCovSummary";
+const GAP_REP_LIST_CTR = "#gapReportListCtr";
+const GAP_REP_LIST = "#gapReportList";
 
 //Competency Details Modal
 const COMP_DTL_MODAL = "#modal-competency-inf";

@@ -38,6 +38,10 @@ const ADD_MODE = "add";
 
 const NA_SEL = "na";
 
+const FWK_REP_TYPE = "fwrt";
+const COMP_REP_TYPE = "crt";
+
+
 //**************************************************************************************************
 // Variables
 
@@ -189,6 +193,32 @@ function getNumberOfProfilesWithAssertedCompetencyAndParents(compId) {
     var cpo = getProfilesWithAssertedCompetencyAndParents(compId);
     if (cpo) return Object.keys(cpo).length;
     else return 0;
+}
+
+function doAnyCpdParentsHaveCoverage(cpdArray) {
+    if (!cpdArray || cpdArray.length == 0) return false;
+    var hasCoverage = false;
+    for (var i=0;i<cpdArray.length;i++) {
+        var cpd = cpdArray[i];
+        if (cpd.hasAssertion) {
+            hasCoverage = true;
+            break;
+        }
+        else hasCoverage = doAnyCpdParentsHaveCoverage(cpd.parents);
+    }
+    return hasCoverage;
+}
+
+function getCpdChildrenWithoutCoverage(cpdArray) {
+    var cpdsWoCoverage = [];
+    for (var i=0;i<cpdArray.length;i++) {
+        var cpd = cpdArray[i];
+        if (!cpd.hasAssertion) {
+            cpdsWoCoverage.push(cpd);
+            cpdsWoCoverage = cpdsWoCoverage.concat(getCpdChildrenWithoutCoverage(cpd.children));
+        }
+    }
+    return cpdsWoCoverage;
 }
 
 function countNumberOfCpdChildrenWithoutCoverage(cpdArray) {
@@ -454,14 +484,10 @@ function fillInAddProfResults(profType) {
     $(ADD_PRF_RES_SELECT).empty();
     $(ADD_PRF_RES_FLTR).val("");
     if (profType == IND_PRF_TYPE) {
-        $(ADD_PRF_EDIT_GRP_BTN).hide();
-        $(ADD_PRF_SAVE_SEL_PRF_GRP_BTN).show();
         setAddProfResultsDesc("All Individuals");
         fillInAddProfIndividualsResults();
     }
     else if (profType == GRP_PRF_TYPE) {
-        $(ADD_PRF_SAVE_SEL_PRF_GRP_BTN).hide();
-        $(ADD_PRF_EDIT_GRP_BTN).show();
         setAddProfResultsDesc("All Groups");
         fillInAddProfGroupResults();
     }
@@ -488,10 +514,93 @@ function openAddProfileModal() {
 //**************************************************************************************************
 // Gap Analysis Report Modal
 //**************************************************************************************************
-function openGapAnalysisReportModal() {
+
+function findProfilesWithCompReport(cpdId) {
+    alert("Todo: Find people with competency report: " + cpdId);
+}
+
+function setGapRepOutputSpecial(msg) {
+    $(GAP_REP_LIST).empty();
+    var smLi = $("<li/>");
+    smLi.addClass("gapReportOutputSpecial");
+    smLi.html(msg);
+    $(GAP_REP_LIST).append(smLi);
+}
+
+function buildAreaGapCpdArray(type,rd) {
+    var noCov = [];
+    var processChildren = true;
+    if (type == COMP_REP_TYPE) {
+        if (!rd.hasAssertion && !doAnyCpdParentsHaveCoverage(rd.parents)) noCov.push(rd);
+        else processChildren = false;
+    }
+    if (rd.children && rd.children.length > 0 && processChildren) {
+        var noCovChildren = getCpdChildrenWithoutCoverage(rd.children);
+        noCovChildren.sort(function(a, b) {return a.name.localeCompare(b.name);});
+        noCov = noCov.concat(noCovChildren);
+    }
+    return noCov;
+}
+
+function getRootDataForGapReport(type,itemId) {
+    var rd;
+    if (type == FWK_REP_TYPE) rd = gapDisplayHelperData.frameworkHelperMap[itemId];
+    else rd = selectedFrameworksCompetencyData.competencyPacketDataMap[itemId];
+    return rd;
+}
+
+function buildGapReportHeader(type,rd,numNotCovered) {
+    var numberRepresented = countNumberOfCpdDescendants(rd.children);
+    if (type != FWK_REP_TYPE) numberRepresented++;
+    var numCovered = numberRepresented - numNotCovered;
+    $(GAP_REP_DESC).html(rd.name);
+    if (numberRepresented > 0) {
+        $(GAP_REP_COV_SUM).html(numCovered + " of " + numberRepresented + " (" + generatePercentFromNumber(numCovered/numberRepresented) + ") Covered");
+    }
+    else $(GAP_REP_COV_SUM).html("");
+}
+
+function addNonCoveredCpdToReportList(cpd) {
+    var ncLi = $("<li/>");
+    ncLi.addClass("gapReportAreaGapLineItem");
+    var ncDiv = $("<div/>");
+    ncDiv.addClass("grid-x");
+    var ncNameDiv = $("<div/>");
+    ncNameDiv.attr("title",cpd.description);
+    ncNameDiv.addClass("cell medium-10 boldText");
+    ncNameDiv.html(cpd.name);
+    var ncDescDiv = $("<div/>");
+    ncDescDiv.addClass("cell medium-6");
+    ncDescDiv.html(cpd.description);
+    var ncToolsDiv = $("<div/>");
+    ncToolsDiv.addClass("cell medium-1 text-center");
+    ncToolsDiv.html("<a title=\"Find profiles that cover this area\" " +
+        "onclick=\"findProfilesWithCompReport('" + cpd.id + "')\"><i class=\"fa fa-users\" aria-hidden=\"true\"></i></a>");
+    ncDiv.append(ncNameDiv);
+    //ncDiv.append(ncDescDiv);
+    ncDiv.append(ncToolsDiv);
+    ncLi.append(ncDiv);
+    $(GAP_REP_LIST).append(ncLi);
+}
+
+function buildAreaGapReport(type,itemId) {
+    $(GAP_REP_LIST).empty();
+    var rd = getRootDataForGapReport(type,itemId);
+    var noCov = buildAreaGapCpdArray(type,rd);
+    buildGapReportHeader(type,rd,noCov.length);
+    if (noCov.length == 0) setGapRepOutputSpecial("All areas in this category are covered by the selected profiles.");
+    else {
+        for (var i=0;i<noCov.length;i++) {
+            addNonCoveredCpdToReportList(noCov[i]);
+        }
+    }
+}
+
+function openGapAnalysisReportModal(type,itemId) {
     hideModalError(GAP_REP_MODAL);
     hideModalBusy(GAP_REP_MODAL);
     enableModalInputsAndButtons();
+    buildAreaGapReport(type,itemId);
     $(GAP_REP_MODAL).foundation('open');
 }
 
@@ -560,7 +669,10 @@ function showGapGraphSidebarFrameworkNodeDetails(frameworkId) {
     $(CIR_FCS_DTL_SING_NAME).html(getFrameworkName(frameworkId));
     $(CIR_FCS_DTL_SING_DESC).html(getFrameworkDescription(frameworkId));
     $(CIR_FCS_DTL_PROF_LIST_CTR).hide();
-    $(CIR_FCS_DTL_COMP_DTL_LINK).hide();
+    //$(CIR_FCS_DTL_COMP_DTL_LINK).hide();
+    $(CIR_FCS_GAP_REP_LINK).off("click").click(function () {
+        openGapAnalysisReportModal(FWK_REP_TYPE,frameworkId);
+    });
     showCircleSidebarDetails();
     scrollFrameworkGapSummary(frameworkId);
 }
@@ -573,8 +685,11 @@ function showGapGraphSidebarSingleNodePacketDetails(cpd) {
     $(CIR_FCS_DTL_SING_NAME).html(cpd.name);
     $(CIR_FCS_DTL_SING_DESC).html(cpd.description);
     buildSidebarDetailsProfileList(cpd);
-    $(CIR_FCS_DTL_COMP_DTL_LINK).show();
+    //$(CIR_FCS_DTL_COMP_DTL_LINK).show();
     //TODO enable the details button
+    $(CIR_FCS_GAP_REP_LINK).off("click").click(function () {
+        openGapAnalysisReportModal(COMP_REP_TYPE,cpd.id);
+    });
     showCircleSidebarDetails();
     var compNode = cpd.cassNodePacket.getNodeList()[0];
     scrollCompNodeInGapSummary(compNode);

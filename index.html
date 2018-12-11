@@ -171,8 +171,9 @@
                                     <h3 id="circleFocusDetailsSingleName"></h3>
                                 </div>
                                 <div id="circleFocusCompTools" class="cell medium-2">
-                                    <a id="circleFocusCompDetailsLink"><i class="fa fa-info-circle" title="Show more details" aria-hidden="true"></i></a>
-                                    <a id="circleFocusGapReportLink" onclick="openGapAnalysisReportModal()"><i class="fa fa-cogs" title="Run gap analysis reports" aria-hidden="true"></i></a>
+                                    <a id="circleFocusCompDetailsLink"><i class="fa fa-info-circle" title="Show more details" aria-hidden="true" style="display:none"></i></a>
+                                    &nbsp;
+                                    <a id="circleFocusGapReportLink"><i class="fa fa-cogs" title="Run gap analysis reports" aria-hidden="true"></i></a>
                                 </div>
                             </div>
                             <p id="circleFocusDetailsSingleDesc" class="lead"></p>
@@ -209,8 +210,7 @@
             <div class="cell medium-12">
                 <button class="button cassUiModalButton" onclick="addSelectedProfiles();">Add</button>
                 &nbsp;&nbsp;
-                <button class="button cassUiModalButtonDisabled" id="addProfSaveSelectedProfsAsGroupBtn" disabled="disabled">Save Selected and Add</button>
-                <button class="button cassUiModalButtonDisabled" id="addProfEditGroupsBtn"  disabled="disabled" style="display:none">Edit Groups</button>
+                <button class="button cassUiModalButtonDisabled" id="addProfEditGroupsBtn"  disabled="disabled">Edit Groups</button>
                 &nbsp;&nbsp;
                 <button class="button secondary cassUiModalButton" data-close>Cancel</button>
             </div>
@@ -292,8 +292,35 @@
     </div>
 
 
-    <div class="reveal large" id="modal-gap-report" data-reveal>
+    <div class="reveal" id="modal-gap-report" data-reveal>
         <h3><i class="fa fa-cogs" aria-hidden="true"></i> Gap Analysis Reports</h3>
+        <div class="grid-x">
+            <div class="cell medium-7">
+                <h5 id="gapReportDesc"></h5>
+            </div>
+            <div class="cell medium-5">
+                <h5 id="gapReportCovSummary"></h5>
+            </div>
+        </div>
+        <div class="grid-x grid-padding-x">
+            <div class="cell medium-12">
+                <label><span></span>
+                    <select>
+                        <option value="area_gap_report/">Uncovered Areas</option>
+                    </select>
+                </label>
+            </div>
+            <div class="cell medium-12">
+                <div id="gapReportListCtr">
+                    <ul class="fa-ul" id="gapReportList"></ul>
+                </div>
+            </div>
+            <div class="cell medium-12">
+                <button class="button cassUiModalButton">Export</button>
+                &nbsp;&nbsp;
+                <button class="button secondary cassUiModalButton" data-close>Close</button>
+            </div>
+        </div>
         <div class="grid-x">
             <div class="cell cassUiModalBusyCtr" style="display:none">
                 <div class="grid-container">

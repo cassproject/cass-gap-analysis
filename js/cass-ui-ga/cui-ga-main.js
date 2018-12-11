@@ -91,13 +91,13 @@ function initializeSelectedDataPoints() {
 
 function getFrameworkName(frameworkId) {
     var fw = frameworkIdFrameworkMap[frameworkId];
-    if (fw) return fw.name;
+    if (fw) return fw.getName();
     else return "Framework not found";
 }
 
 function getFrameworkDescription(frameworkId) {
     var fw = frameworkIdFrameworkMap[frameworkId];
-    if (fw) return fw.description;
+    if (fw) return fw.getDescription();
     else return "Framework not found";
 }
 
@@ -1208,8 +1208,8 @@ function fetchSelectedProfileAssertions() {
 
 function createSortedAvailableFrameworkList(ownedFrameworkList,unownedFrameworkList) {
     availableFrameworkList = [];
-    ownedFrameworkList.sort(function (a, b) {return a.name.localeCompare(b.name);});
-    unownedFrameworkList.sort(function (a, b) {return a.name.localeCompare(b.name);});
+    ownedFrameworkList.sort(function (a, b) {return a.getName().localeCompare(b.getName());});
+    unownedFrameworkList.sort(function (a, b) {return a.getName().localeCompare(b.getName());});
     for (var i=0;i<ownedFrameworkList.length;i++) {
         availableFrameworkList.push(ownedFrameworkList[i]);
     }
@@ -1224,16 +1224,22 @@ function buildFrameworkLists(arrayOfEcFrameworks) {
     frameworkIdFrameworkMap = {};
     for (var i=0;i<arrayOfEcFrameworks.length;i++) {
         var cecf = arrayOfEcFrameworks[i];
-        if (cecf.name && cecf.name.trim().length > 0) {
-            frameworkIdFrameworkMap[cecf.shortId()] = cecf;
-            if (!frameworkNameFrameworkMap[cecf.name.trim()]) {
-                frameworkNameFrameworkMap[cecf.name.trim()] = [];
+        try {
+            if (cecf && cecf.getName() && cecf.getName().trim().length > 0) {
+                frameworkIdFrameworkMap[cecf.shortId()] = cecf;
+                if (!frameworkNameFrameworkMap[cecf.getName().trim()]) {
+                    frameworkNameFrameworkMap[cecf.getName().trim()] = [];
+                }
+                frameworkNameFrameworkMap[cecf.getName().trim()].push(cecf);
+                if (cecf.hasOwner(loggedInPk)) {
+                    ownedFrameworkList.push(cecf);
+                }
+                else unownedFrameworkList.push(cecf);
             }
-            frameworkNameFrameworkMap[cecf.name.trim()].push(cecf);
-            if (cecf.hasOwner(loggedInPk)) {
-                ownedFrameworkList.push(cecf);
-            }
-            else unownedFrameworkList.push(cecf);
+        }
+        catch (ex) {
+            debugMessage("buildFrameworkLists exception: " + ex);
+            debugMessage(cecf);
         }
     }
     if ((ownedFrameworkList.length + unownedFrameworkList.length) <= 0) {

@@ -328,6 +328,10 @@ input:checked~.switch-paddle {
 
 /* ---- MISC ---- */
 
+.gapReportTypeHdr {
+    margin-top: .5rem;
+}
+
 #gapReportListCtr {
     margin-bottom:1.2rem;
     max-height: 20rem;

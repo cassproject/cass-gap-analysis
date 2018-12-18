@@ -256,6 +256,166 @@ EcConceptScheme = stjs.extend(EcConceptScheme, ConceptScheme, [], function(const
     };
 }, {hasTopConcept: "Concept", owner: {name: "Array", arguments: [null]}, signature: {name: "Array", arguments: [null]}, reader: {name: "Array", arguments: [null]}, atProperties: {name: "Array", arguments: [null]}}, {});
 /**
+ *  Implementation of a Rollup Rule object with methods for interacting with CASS
+ *  services on a server.
+ * 
+ *  @author fritz.ray@eduworks.com
+ *  @author devlin.junker@eduworks.com
+ *  @module org.cassproject
+ *  @class EcRollupRule
+ *  @constructor
+ *  @extends RollupRule
+ */
+var EcRollupRule = function() {
+    RollupRule.call(this);
+};
+EcRollupRule = stjs.extend(EcRollupRule, RollupRule, [], function(constructor, prototype) {
+    /**
+     *  Retrieves a rollup rule from the server
+     * 
+     *  @param {String}                  id
+     *                                   ID of the rollup rule to retrieve
+     *  @param {Callback1<EcRollupRule>} success
+     *                                   Callback triggered on successful retrieving rollup rule,
+     *                                   returns the rollup rule
+     *  @param {Callback1<String>}       failure
+     *                                   Callback triggered if error retrieving rollup rule
+     *  @memberOf EcRollupRule
+     *  @method get
+     *  @static
+     */
+    constructor.get = function(id, success, failure) {
+        EcRepository.get(id, function(p1) {
+            if (success == null) 
+                return;
+            if (!p1.isA(EcRollupRule.myType)) {
+                if (failure != null) 
+                    failure("Resultant object is not a level.");
+                return;
+            }
+            var c = new EcRollupRule();
+            c.copyFrom(p1);
+            success(c);
+        }, function(p1) {
+            if (failure != null) 
+                failure(p1);
+        });
+    };
+    /**
+     *  Searches for levels with a string query
+     * 
+     *  @param {EcRepository}                   repo
+     *                                          Repository to search for levels
+     *  @param {String}                         query
+     *                                          query string to use in search
+     *  @param {Callback1<Array<EcRollupRule>>} success
+     *                                          Callback triggered when searches successfully
+     *  @param {Callback1<String>}              failure
+     *                                          Callback triggered if an error occurs while searching
+     *  @param {Object}                         paramObj
+     *                                          Search parameters object to pass in
+     *  @param size
+     *  @param start
+     *  @memberOf EcRollupRule
+     *  @method search
+     *  @static
+     */
+    constructor.search = function(repo, query, success, failure, paramObj) {
+        var queryAdd = "";
+        queryAdd = new EcRollupRule().getSearchStringByType();
+        if (query == null || query == "") 
+            query = queryAdd;
+         else 
+            query = "(" + query + ") AND " + queryAdd;
+        repo.searchWithParams(query, paramObj, null, function(p1) {
+            if (success != null) {
+                var ret = [];
+                for (var i = 0; i < p1.length; i++) {
+                    var rule = new EcRollupRule();
+                    if (p1[i].isAny(rule.getTypes())) {
+                        rule.copyFrom(p1[i]);
+                    } else if (p1[i].isA(EcEncryptedValue.myType)) {
+                        var val = new EcEncryptedValue();
+                        val.copyFrom(p1[i]);
+                        if (val.isAnEncrypted(EcRollupRule.myType)) {
+                            var obj = val.decryptIntoObject();
+                            rule.copyFrom(obj);
+                            EcEncryptedValue.encryptOnSave(rule.id, true);
+                        }
+                    }
+                    ret[i] = rule;
+                }
+                success(ret);
+            }
+        }, failure);
+    };
+    /**
+     *  Method for setting a rollup rule name
+     * 
+     *  @param name
+     *  @memberOf EcRollupRule
+     *  @method setName
+     */
+    prototype.setName = function(name) {
+        this.name = name;
+    };
+    /**
+     *  Method for setting a rollup rule description
+     * 
+     *  @param {String} description
+     *  @memberOf EcRollupRule
+     *  @method setDescription
+     */
+    prototype.setDescription = function(description) {
+        this.description = description;
+    };
+    /**
+     *  Saves this rollup rules details on the server specified by its ID
+     * 
+     *  @param {Callback1<String>} success
+     *                             Callback triggered on successful save of rollup rule
+     *  @param {Callback1<String>} failure
+     *                             Callback triggered if error saving rollup rule
+     *  @memberOf EcRollupRule
+     *  @method save
+     */
+    prototype.save = function(success, failure, repo) {
+        if (this.rule == null || this.rule == "") {
+            var msg = "RollupRule Rule cannot be empty";
+            if (failure != null) 
+                failure(msg);
+             else 
+                console.error(msg);
+            return;
+        }
+        if (this.competency == null || this.competency == "") {
+            var msg = "RollupRule's Competency cannot be empty";
+            if (failure != null) 
+                failure(msg);
+             else 
+                console.error(msg);
+            return;
+        }
+        if (repo == null) 
+            EcRepository.save(this, success, failure);
+         else 
+            repo.saveTo(this, success, failure);
+    };
+    /**
+     *  Deletes this rollup rule from the server specified by it's ID
+     * 
+     *  @param {Callback1<String>} success
+     *                             Callback triggered on successful deleting the rollup rle
+     *  @param {Callback1<String>} failure
+     *                             Callback triggered if error deleting the rollup rule
+     *  @memberOf EcRollupRule
+     *  @method _delete
+     */
+    prototype._delete = function(success, failure) {
+        EcRepository.DELETE(this, success, failure);
+    };
+}, {contributor: "Object", reviews: "Review", audience: "Audience", timeRequired: "Duration", publication: "PublicationEvent", contentLocation: "Place", temporalCoverage: "Object", isBasedOn: "Object", fileFormat: "Object", interactionStatistic: "InteractionCounter", recordedAt: "Event", isPartOf: "CreativeWork", exampleOfWork: "CreativeWork", dateCreated: "Object", releasedEvent: "PublicationEvent", publisher: "Object", encoding: "MediaObject", creator: "Object", hasPart: "CreativeWork", license: "Object", translator: "Object", offers: "Offer", schemaVersion: "Object", review: "Review", position: "Object", genre: "Object", character: "Person", producer: "Object", editor: "Person", locationCreated: "Place", about: "Thing", audio: "AudioObject", encodings: "MediaObject", funder: "Object", accountablePerson: "Person", material: "Object", author: "Object", sourceOrganization: "Organization", sponsor: "Object", provider: "Object", copyrightHolder: "Object", comment: "Comment", spatialCoverage: "Place", aggregateRating: "AggregateRating", educationalAlignment: "AlignmentObject", video: "VideoObject", version: "Object", mainEntity: "Thing", associatedMedia: "MediaObject", workExample: "CreativeWork", mentions: "Thing", citation: "Object", dateModified: "Object", inLanguage: "Object", isBasedOnUrl: "Object", identifier: "Object", image: "Object", potentialAction: "Action", mainEntityOfPage: "Object", owner: {name: "Array", arguments: [null]}, signature: {name: "Array", arguments: [null]}, reader: {name: "Array", arguments: [null]}, atProperties: {name: "Array", arguments: [null]}}, {});
+/**
  *  The sequence that assertions should be built as such: 1. Generate the ID. 2.
  *  Add the owner. 3. Set the subject. 4. Set the agent. Further functions may be
  *  called afterwards in any order. WARNING: The modifications of ownership and
@@ -403,63 +563,123 @@ EcAssertion = stjs.extend(EcAssertion, Assertion, [], function(constructor, prot
         if (this.subject == null) 
             return "Nobody";
         var subjectPk = this.getSubject();
-        var identity = EcIdentityManager.getIdentity(subjectPk);
-        if (identity != null && identity.displayName != null) 
-            return identity.displayName + " (You)";
-        var contact = EcIdentityManager.getContact(subjectPk);
-        if (contact == null || contact.displayName == null) 
-            return "Unknown Subject";
-        return contact.displayName;
+        var name = EcAssertion.getNameByPkBlocking(subjectPk);
+        if (name != null) 
+            return name;
+        return "Unknown Subject";
     };
     prototype.getSubjectNameAsync = function(success, failure) {
         if (this.subject == null) {
             success("Nobody");
             return;
         }
-        this.getSubjectAsync(function(subjectPk) {
-            var identity = EcIdentityManager.getIdentity(subjectPk);
-            if (identity != null && identity.displayName != null) {
-                success(identity.displayName + " (You)");
-                return;
-            }
-            var contact = EcIdentityManager.getContact(subjectPk);
-            if (contact == null || contact.displayName == null) {
-                success("Unknown Subject");
-                return;
-            }
-            success(contact.displayName);
-        }, failure);
+        this.getSubjectAsync(EcAssertion.getNameByPk(success, failure, "Unknown Subject"), failure);
     };
     prototype.getAgentName = function() {
         if (this.agent == null) 
             return "Nobody";
         var agentPk = this.getAgent();
-        var identity = EcIdentityManager.getIdentity(agentPk);
-        if (identity != null && identity.displayName != null) 
-            return identity.displayName + " (You)";
-        var contact = EcIdentityManager.getContact(agentPk);
-        if (contact == null || contact.displayName == null) 
-            return "Unknown Agent";
-        return contact.displayName;
+        var name = EcAssertion.getNameByPkBlocking(agentPk);
+        if (name != null) 
+            return name;
+        return "Unknown Agent";
     };
     prototype.getAgentNameAsync = function(success, failure) {
         if (this.subject == null) {
             success("Nobody");
             return;
         }
-        this.getAgentAsync(function(subjectPk) {
-            var identity = EcIdentityManager.getIdentity(subjectPk);
-            if (identity != null && identity.displayName != null) {
-                success(identity.displayName + " (You)");
-                return;
+        this.getAgentAsync(EcAssertion.getNameByPk(success, failure, "Unknown Agent"), failure);
+    };
+    constructor.getNameByPk = function(success, failure, dflt) {
+        return function(pk) {
+            var identity = EcIdentityManager.getIdentity(pk);
+            if (identity != null && identity.displayName != null) 
+                if (identity.displayName != "You" && identity.displayName.indexOf("Alias") != -1) {
+                    success(identity.displayName + " (You)");
+                    return;
+                }
+            var contact = EcIdentityManager.getContact(pk);
+            if (contact != null && contact.displayName != null) 
+                if (contact.displayName != "You" && contact.displayName.indexOf("Alias") != -1) {
+                    success(contact.displayName);
+                    return;
+                }
+            var repoHelper = new EcAsyncHelper();
+            repoHelper.each(EcRepository.repos, function(ecRepository, callback0) {
+                var url = ecRepository.selectedServer;
+                if (url == null) {
+                    callback0();
+                    return;
+                }
+                if (url.endsWith("/") == false) 
+                    url += "/";
+                url += "data/" + pk.fingerprint();
+                EcRepository.get(url, function(personOrOrganization) {
+                    var e = new EcEncryptedValue();
+                    if (personOrOrganization.isAny(e.getTypes())) {
+                        e.copyFrom(personOrOrganization);
+                        e.decryptIntoObjectAsync(function(decryptedPersonOrOrganization) {
+                            var name = Thing.getDisplayStringFrom((decryptedPersonOrOrganization)["name"]);
+                            if (name != null && repoHelper.counter != -1) {
+                                success(name);
+                                repoHelper.stop();
+                            } else {
+                                callback0();
+                                return;
+                            }
+                        }, function(s) {
+                            callback0();
+                        });
+                    } else {
+                        var name = Thing.getDisplayStringFrom((personOrOrganization)["name"]);
+                        if (name != null && repoHelper.counter != -1) {
+                            success(name);
+                            repoHelper.stop();
+                        } else {
+                            callback0();
+                            return;
+                        }
+                    }
+                }, function(s) {
+                    callback0();
+                });
+            }, function(strings) {
+                success(dflt);
+            });
+        };
+    };
+    constructor.getNameByPkBlocking = function(agentPk) {
+        var identity = EcIdentityManager.getIdentity(agentPk);
+        if (identity != null && identity.displayName != null) 
+            if (identity.displayName != "You" && identity.displayName.indexOf("Alias") != -1) 
+                return identity.displayName + " (You)";
+        var contact = EcIdentityManager.getContact(agentPk);
+        if (contact != null && contact.displayName != null) 
+            if (contact.displayName != "You" && contact.displayName.indexOf("Alias") != -1) 
+                return contact.displayName;
+        for (var i = 0; i < EcRepository.repos.length; i++) {
+            var url = EcRepository.repos[i].selectedServer;
+            if (url == null) 
+                continue;
+            if (url.endsWith("/") == false) 
+                url += "/";
+            url += "data/" + agentPk.fingerprint();
+            var personOrOrganization = EcRepository.getBlocking(url);
+            if (personOrOrganization == null) 
+                continue;
+            var e = new EcEncryptedValue();
+            if (personOrOrganization.isAny(e.getTypes())) {
+                e.copyFrom(personOrOrganization);
+                var decryptedPersonOrOrganization = e.decryptIntoObject();
+                if (decryptedPersonOrOrganization != null) 
+                    personOrOrganization = decryptedPersonOrOrganization;
             }
-            var contact = EcIdentityManager.getContact(subjectPk);
-            if (contact == null || contact.displayName == null) {
-                success("Unknown Agent");
-                return;
-            }
-            success(contact.displayName);
-        }, failure);
+            var name = Thing.getDisplayStringFrom((personOrOrganization)["name"]);
+            if (name != null) 
+                return name;
+        }
+        return null;
     };
     prototype.getAssertionDate = function() {
         if (this.assertionDate == null) 
@@ -778,166 +998,6 @@ EcAssertion = stjs.extend(EcAssertion, Assertion, [], function(constructor, prot
         return "(" + this.getSearchStringByType() + " AND competency:\"" + competency.shortId() + "\")";
     };
 }, {codebooks: "Object", subject: "EcEncryptedValue", agent: "EcEncryptedValue", evidence: {name: "Array", arguments: ["EcEncryptedValue"]}, assertionDate: "EcEncryptedValue", expirationDate: "EcEncryptedValue", decayFunction: "EcEncryptedValue", negative: "EcEncryptedValue", contributor: "Object", reviews: "Review", audience: "Audience", timeRequired: "Duration", publication: "PublicationEvent", contentLocation: "Place", temporalCoverage: "Object", isBasedOn: "Object", fileFormat: "Object", interactionStatistic: "InteractionCounter", recordedAt: "Event", isPartOf: "CreativeWork", exampleOfWork: "CreativeWork", dateCreated: "Object", releasedEvent: "PublicationEvent", publisher: "Object", encoding: "MediaObject", creator: "Object", hasPart: "CreativeWork", license: "Object", translator: "Object", offers: "Offer", schemaVersion: "Object", review: "Review", position: "Object", genre: "Object", character: "Person", producer: "Object", editor: "Person", locationCreated: "Place", about: "Thing", audio: "AudioObject", encodings: "MediaObject", funder: "Object", accountablePerson: "Person", material: "Object", author: "Object", sourceOrganization: "Organization", sponsor: "Object", provider: "Object", copyrightHolder: "Object", comment: "Comment", spatialCoverage: "Place", aggregateRating: "AggregateRating", educationalAlignment: "AlignmentObject", video: "VideoObject", version: "Object", mainEntity: "Thing", associatedMedia: "MediaObject", workExample: "CreativeWork", mentions: "Thing", citation: "Object", dateModified: "Object", inLanguage: "Object", isBasedOnUrl: "Object", identifier: "Object", image: "Object", potentialAction: "Action", mainEntityOfPage: "Object", owner: {name: "Array", arguments: [null]}, signature: {name: "Array", arguments: [null]}, reader: {name: "Array", arguments: [null]}, atProperties: {name: "Array", arguments: [null]}}, {});
-/**
- *  Implementation of a Rollup Rule object with methods for interacting with CASS
- *  services on a server.
- * 
- *  @author fritz.ray@eduworks.com
- *  @author devlin.junker@eduworks.com
- *  @module org.cassproject
- *  @class EcRollupRule
- *  @constructor
- *  @extends RollupRule
- */
-var EcRollupRule = function() {
-    RollupRule.call(this);
-};
-EcRollupRule = stjs.extend(EcRollupRule, RollupRule, [], function(constructor, prototype) {
-    /**
-     *  Retrieves a rollup rule from the server
-     * 
-     *  @param {String}                  id
-     *                                   ID of the rollup rule to retrieve
-     *  @param {Callback1<EcRollupRule>} success
-     *                                   Callback triggered on successful retrieving rollup rule,
-     *                                   returns the rollup rule
-     *  @param {Callback1<String>}       failure
-     *                                   Callback triggered if error retrieving rollup rule
-     *  @memberOf EcRollupRule
-     *  @method get
-     *  @static
-     */
-    constructor.get = function(id, success, failure) {
-        EcRepository.get(id, function(p1) {
-            if (success == null) 
-                return;
-            if (!p1.isA(EcRollupRule.myType)) {
-                if (failure != null) 
-                    failure("Resultant object is not a level.");
-                return;
-            }
-            var c = new EcRollupRule();
-            c.copyFrom(p1);
-            success(c);
-        }, function(p1) {
-            if (failure != null) 
-                failure(p1);
-        });
-    };
-    /**
-     *  Searches for levels with a string query
-     * 
-     *  @param {EcRepository}                   repo
-     *                                          Repository to search for levels
-     *  @param {String}                         query
-     *                                          query string to use in search
-     *  @param {Callback1<Array<EcRollupRule>>} success
-     *                                          Callback triggered when searches successfully
-     *  @param {Callback1<String>}              failure
-     *                                          Callback triggered if an error occurs while searching
-     *  @param {Object}                         paramObj
-     *                                          Search parameters object to pass in
-     *  @param size
-     *  @param start
-     *  @memberOf EcRollupRule
-     *  @method search
-     *  @static
-     */
-    constructor.search = function(repo, query, success, failure, paramObj) {
-        var queryAdd = "";
-        queryAdd = new EcRollupRule().getSearchStringByType();
-        if (query == null || query == "") 
-            query = queryAdd;
-         else 
-            query = "(" + query + ") AND " + queryAdd;
-        repo.searchWithParams(query, paramObj, null, function(p1) {
-            if (success != null) {
-                var ret = [];
-                for (var i = 0; i < p1.length; i++) {
-                    var rule = new EcRollupRule();
-                    if (p1[i].isAny(rule.getTypes())) {
-                        rule.copyFrom(p1[i]);
-                    } else if (p1[i].isA(EcEncryptedValue.myType)) {
-                        var val = new EcEncryptedValue();
-                        val.copyFrom(p1[i]);
-                        if (val.isAnEncrypted(EcRollupRule.myType)) {
-                            var obj = val.decryptIntoObject();
-                            rule.copyFrom(obj);
-                            EcEncryptedValue.encryptOnSave(rule.id, true);
-                        }
-                    }
-                    ret[i] = rule;
-                }
-                success(ret);
-            }
-        }, failure);
-    };
-    /**
-     *  Method for setting a rollup rule name
-     * 
-     *  @param name
-     *  @memberOf EcRollupRule
-     *  @method setName
-     */
-    prototype.setName = function(name) {
-        this.name = name;
-    };
-    /**
-     *  Method for setting a rollup rule description
-     * 
-     *  @param {String} description
-     *  @memberOf EcRollupRule
-     *  @method setDescription
-     */
-    prototype.setDescription = function(description) {
-        this.description = description;
-    };
-    /**
-     *  Saves this rollup rules details on the server specified by its ID
-     * 
-     *  @param {Callback1<String>} success
-     *                             Callback triggered on successful save of rollup rule
-     *  @param {Callback1<String>} failure
-     *                             Callback triggered if error saving rollup rule
-     *  @memberOf EcRollupRule
-     *  @method save
-     */
-    prototype.save = function(success, failure, repo) {
-        if (this.rule == null || this.rule == "") {
-            var msg = "RollupRule Rule cannot be empty";
-            if (failure != null) 
-                failure(msg);
-             else 
-                console.error(msg);
-            return;
-        }
-        if (this.competency == null || this.competency == "") {
-            var msg = "RollupRule's Competency cannot be empty";
-            if (failure != null) 
-                failure(msg);
-             else 
-                console.error(msg);
-            return;
-        }
-        if (repo == null) 
-            EcRepository.save(this, success, failure);
-         else 
-            repo.saveTo(this, success, failure);
-    };
-    /**
-     *  Deletes this rollup rule from the server specified by it's ID
-     * 
-     *  @param {Callback1<String>} success
-     *                             Callback triggered on successful deleting the rollup rle
-     *  @param {Callback1<String>} failure
-     *                             Callback triggered if error deleting the rollup rule
-     *  @memberOf EcRollupRule
-     *  @method _delete
-     */
-    prototype._delete = function(success, failure) {
-        EcRepository.DELETE(this, success, failure);
-    };
-}, {contributor: "Object", reviews: "Review", audience: "Audience", timeRequired: "Duration", publication: "PublicationEvent", contentLocation: "Place", temporalCoverage: "Object", isBasedOn: "Object", fileFormat: "Object", interactionStatistic: "InteractionCounter", recordedAt: "Event", isPartOf: "CreativeWork", exampleOfWork: "CreativeWork", dateCreated: "Object", releasedEvent: "PublicationEvent", publisher: "Object", encoding: "MediaObject", creator: "Object", hasPart: "CreativeWork", license: "Object", translator: "Object", offers: "Offer", schemaVersion: "Object", review: "Review", position: "Object", genre: "Object", character: "Person", producer: "Object", editor: "Person", locationCreated: "Place", about: "Thing", audio: "AudioObject", encodings: "MediaObject", funder: "Object", accountablePerson: "Person", material: "Object", author: "Object", sourceOrganization: "Organization", sponsor: "Object", provider: "Object", copyrightHolder: "Object", comment: "Comment", spatialCoverage: "Place", aggregateRating: "AggregateRating", educationalAlignment: "AlignmentObject", video: "VideoObject", version: "Object", mainEntity: "Thing", associatedMedia: "MediaObject", workExample: "CreativeWork", mentions: "Thing", citation: "Object", dateModified: "Object", inLanguage: "Object", isBasedOnUrl: "Object", identifier: "Object", image: "Object", potentialAction: "Action", mainEntityOfPage: "Object", owner: {name: "Array", arguments: [null]}, signature: {name: "Array", arguments: [null]}, reader: {name: "Array", arguments: [null]}, atProperties: {name: "Array", arguments: [null]}}, {});
 /**
  *  Implementation of an alignment object with methods for interacting with CASS
  *  services on a server.

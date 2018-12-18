@@ -13,8 +13,6 @@
 //TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 //TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 
-//TODO toggleGapSummaryCompChild figure out bug with this (same with Framework Explorer)
-
 //TODO parseSelectedGroupProfiles ONLY Include Org members that are contacts???
 
 //TODO Handle Same Competency IDs across multiple frameworks
@@ -719,18 +717,14 @@ function showCircleGraphSidebarDetails(compId) {
 // Graph View Summary (Left-Hand Side)
 //**************************************************************************************************
 
-function expandGapSummaryToObject(expObj) {
-    if (expObj.hasClass("gpsiChild")) {
-        expObj.attr("style", "display:block");
-        if (expObj.parent().children().eq(0) && expObj.parent().children().eq(0).find("i:first")) {
-            var ic = expObj.parent().children().eq(0).find("i:first");
-            if (ic && (ic.hasClass("fa-chevron-down") || ic.hasClass("fa-chevron-right"))) {
-                ic.attr("class", "fa fa-chevron-down");
-            }
-        }
-        if (expObj.parent() && expObj.parent().parent()) {
-            expandGapSummaryToObject(expObj.parent().parent());
-        }
+function expandGapSummaryToObject(toggleObj) {
+    if ((toggleObj.prop("tagName") && (toggleObj.prop("tagName").toLowerCase() == "a")) &&
+        toggleObj.find('i:first').hasClass("fa-chevron-right")) {
+        toggleGapSummaryCompChild(toggleObj);
+    }
+    if (toggleObj.parent().hasClass(CIR_FCS_SUM_ITEM_NON_ROOT_COMP_CLASS)) {
+        var parentToToggle = toggleObj.parent().parent().parent().find('a:first');
+        if (parentToToggle.hasClass(CIR_FCS_SUM_ITEM_TOGGLE_CLASS_ID)) expandGapSummaryToObject(parentToToggle);
     }
 }
 
@@ -739,11 +733,26 @@ function removeAllGapSummaryHighLighting() {
 }
 
 function expandGapSummaryToCompNode(compNode) {
-    var obj = $("#" + buildGapSummaryCompItemElementId(compNode));
     removeAllGapSummaryHighLighting();
-    obj.addClass("active");
-    var objPP = obj.parent().parent();
-    expandGapSummaryToObject(objPP);
+    var toggleObj = $("#" + buildGapSummaryItemToggleElementId(compNode));
+    var liObject = $("#" + buildGapSummaryCompItemElementId(compNode));
+    liObject.addClass("active");
+    if (toggleObj.parent().hasClass(CIR_FCS_SUM_ITEM_ROOT_COMP_CLASS)  &&
+        (toggleObj.prop("tagName") && (toggleObj.prop("tagName").toLowerCase() == "a")) &&
+        toggleObj.find('i:first').hasClass("fa-chevron-right")) {
+        toggleGapSummaryCompChild(toggleObj);
+    }
+    else expandGapSummaryToObject(toggleObj);
+}
+
+function expandGapSummaryToFramework(fwId) {
+    removeAllGapSummaryHighLighting();
+    var toggleObj = $("#" + buildGapSummaryItemToggleElementIdForFwkId(fwId));
+    var liObject = $("#" + buildIDableString(fwId) + "_psi");
+    liObject.addClass("active");
+    if (toggleObj.find('i:first').hasClass("fa-chevron-right")) {
+        toggleGapSummaryCompChild(toggleObj);
+    }
 }
 
 function scrollCompNodeInGapSummary(compNode) {
@@ -751,14 +760,6 @@ function scrollCompNodeInGapSummary(compNode) {
         expandGapSummaryToCompNode(compNode);
         $(CIR_FCS_SUM_COMP_LIST_CTR).scrollTo("#" + buildGapSummaryCompItemElementId(compNode), 500);
     }
-}
-
-function expandGapSummaryToFramework(fwId) {
-    var obj = $("#" + buildIDableString(fwId) + "_psi");
-    removeAllGapSummaryHighLighting();
-    obj.addClass("active");
-    var objPP = obj.parent().parent();
-    expandGapSummaryToObject(objPP);
 }
 
 function scrollFrameworkGapSummary(fwId) {
@@ -772,7 +773,6 @@ function buildGapSummaryCompItemElementId(compNode) {
     return buildIDableString(compNode.getId().trim()) + "_psi";
 }
 
-//TODO toggleGapSummaryCompChild figure out bug with this
 function toggleGapSummaryCompChild(ce) {
     if (ce.find('i:first').hasClass("fa-chevron-right")) {
         ce.find('i:first').attr("class", "fa fa-chevron-down");
@@ -799,13 +799,20 @@ function generateCompetencyLineItemHtmlGapSummaryCoverageText(compNode) {
     return cto;
 }
 
+function buildGapSummaryItemToggleElementId(compNode) {
+    return buildIDableString(compNode.getId().trim()) + "_psiToggle";
+}
+
 function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildren) {
     var liHtml = "";
     if (hasChildren) {
-        liHtml += "<a onclick=\"toggleGapSummaryCompChild($(this))\"><i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>";
+        liHtml += "<a class=\"" + CIR_FCS_SUM_ITEM_TOGGLE_CLASS_ID + "\" " +
+            " id=\"" + buildGapSummaryItemToggleElementId(compNode) + "\" onclick=\"toggleGapSummaryCompChild($(this))\">" +
+            " <i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>";
     }
     else {
-        liHtml += "<i class=\"fa fa-circle " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i>";
+        liHtml += "<i id=\"" + buildGapSummaryItemToggleElementId(compNode) + "\" class=\"fa fa-circle " + CIR_FCS_SUM_ITEM_CLASS_ID +
+            " " + CIR_FCS_SUM_ITEM_TOGGLE_CLASS_ID + "\" aria-hidden=\"true\"></i>";
     }
     var cto = generateCompetencyLineItemHtmlGapSummaryCoverageText(compNode);
     liHtml += "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildGapSummaryCompItemElementId(compNode) + "\" " +
@@ -815,10 +822,10 @@ function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildr
 }
 
 //TODO addChildToGapSummaryCompList construct list view for multi node competency cluster
-function addChildToGapSummaryCompList(parentUl, childCpd, isRootComp) {
+function addChildToGapSummaryCompList(parentUl, childCpd, isRootComp, isForMultiFwk) {
     var childLi = $("<li/>");
-    if (isRootComp) childLi.addClass("gpsiRootComp");
-    else childLi.addClass("gpsiNonRootComp");
+    if (isRootComp && !isForMultiFwk) childLi.addClass(CIR_FCS_SUM_ITEM_ROOT_COMP_CLASS);
+    else childLi.addClass(CIR_FCS_SUM_ITEM_NON_ROOT_COMP_CLASS);
     var cpd = selectedFrameworksCompetencyData.competencyPacketDataMap[childCpd.id];
     var compNode = cpd.cassNodePacket.getNodeList()[0];
     var hasChildren = childCpd.children && childCpd.children.length > 0;
@@ -831,14 +838,14 @@ function addChildToGapSummaryCompList(parentUl, childCpd, isRootComp) {
         childsChildUl.attr("class", "fa-ul gpsiChild");
         childsChildUl.attr("style", "display:none");
         $(childCpd.children).each(function (i, cc) {
-            addChildToGapSummaryCompList(childsChildUl, cc, false);
+            addChildToGapSummaryCompList(childsChildUl, cc, false, isForMultiFwk);
         });
         childLi.append(childsChildUl);
     }
     parentUl.append(childLi);
 }
 
-function buildGapSummaryFrameworkCompetencyList(parentElem,cpdArray,ulClass,hideElem) {
+function buildGapSummaryFrameworkCompetencyList(parentElem,cpdArray,ulClass,hideElem,isForMultiFwk) {
     if (cpdArray && cpdArray.length > 0) {
         cpdArray.sort(function (a, b) {
             return a.name.localeCompare(b.name);
@@ -847,7 +854,7 @@ function buildGapSummaryFrameworkCompetencyList(parentElem,cpdArray,ulClass,hide
         childUl.attr("class", ulClass + " gpsiChild");
         if (hideElem) childUl.attr("style", "display:none");
         $(cpdArray).each(function (i, c) {
-            addChildToGapSummaryCompList(childUl, c, true);
+            addChildToGapSummaryCompList(childUl, c, true, isForMultiFwk);
         });
         parentElem.append(childUl);
     }
@@ -864,20 +871,31 @@ function generateFrameworkLineItemHtmlGapSummaryCoverageText(fw) {
     return cto;
 }
 
+function buildGapSummaryItemToggleElementIdForFwkId(fwid) {
+    return buildIDableString(fwid.trim()) + "_psiToggle";
+}
+
+function buildGapSummaryFrameworkItemHtml(fw) {
+    var cto = generateFrameworkLineItemHtmlGapSummaryCoverageText(fw);
+    var fwLiHtml = "<a class=\"" + CIR_FCS_SUM_ITEM_TOGGLE_CLASS_ID + "\" id=\"" + buildGapSummaryItemToggleElementIdForFwkId(fw.shortId()) + "\" " +
+        "onclick=\"toggleGapSummaryCompChild($(this))\">" +
+        "<i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>" +
+        "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildIDableString(fw.shortId().trim()) + "_psi" + "\" " +
+        "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(fw.shortId().trim()) + "',true)\">" +
+        fw.name.trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
+    return fwLiHtml;
+}
+
 function buildGapSummaryMultiSelectedFrameworkCompetencyList() {
     var fwUl = $("<ul/>");
     fwUl.attr("class", "no-bullets gpsiChild");
     $(selectedFrameworks).each(function (i, fw) {
-        var cto = generateFrameworkLineItemHtmlGapSummaryCoverageText(fw);
         var fwLi = $("<li/>");
-        var fwLiHtml = "<a onclick=\"toggleGapSummaryCompChild($(this))\">" +
-            "<i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>" +
-            "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildIDableString(fw.shortId().trim()) + "_psi" + "\" " +
-            "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(fw.shortId().trim()) + "',true)\">" +
-            fw.name.trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
+        fwLi.addClass(CIR_FCS_SUM_ITEM_ROOT_COMP_CLASS);
+        var fwLiHtml = buildGapSummaryFrameworkItemHtml(fw);
         fwLi.html(fwLiHtml);
         var cpdToDisplay = gapDisplayHelperData.frameworkHelperMap[fw.shortId()].children;
-        buildGapSummaryFrameworkCompetencyList(fwLi,cpdToDisplay,"fa-ul",true);
+        buildGapSummaryFrameworkCompetencyList(fwLi,cpdToDisplay,"fa-ul",true,true);
         fwUl.append(fwLi);
     });
     $(CIR_FCS_SUM_COMP_LIST_CTR).append(fwUl);
@@ -887,7 +905,7 @@ function buildGapSummaryCompetencyList() {
     $(CIR_FCS_SUM_COMP_LIST_CTR).empty();
     if (selectedFrameworks.length == 1) {
         var cpdToDisplay = gapDisplayHelperData.gapHelper.children[0].children;
-        buildGapSummaryFrameworkCompetencyList($(CIR_FCS_SUM_COMP_LIST_CTR),cpdToDisplay,"no-bullets",false);
+        buildGapSummaryFrameworkCompetencyList($(CIR_FCS_SUM_COMP_LIST_CTR),cpdToDisplay,"no-bullets",false,false);
     }
     else if (selectedFrameworks.length > 1) buildGapSummaryMultiSelectedFrameworkCompetencyList();
 }

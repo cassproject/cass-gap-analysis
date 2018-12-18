@@ -57,7 +57,11 @@ const CIR_FCS_SUM_SEL_PROF_LIST = "#circleFocusSummarySelProfList";
 const CIR_FCS_SUM_NUM_COMPS = "#circleFocusSummaryNumComps";
 const CIR_FCS_SUM_COV = "#circleFocusSummaryCoverage";
 const CIR_FCS_SUM_COMP_LIST_CTR = "#circleFocusSummaryCompListCtr";
+
 const CIR_FCS_SUM_ITEM_CLASS_ID = "gpsi";
+const CIR_FCS_SUM_ITEM_TOGGLE_CLASS_ID = "gpsiToggle";
+const CIR_FCS_SUM_ITEM_ROOT_COMP_CLASS = "gpsiRootComp";
+const CIR_FCS_SUM_ITEM_NON_ROOT_COMP_CLASS = "gpsiNonRootComp";
 
 //Warning Containers
 const NO_FRAMEWORKS_AVAILABLE_CTR = "#noFrameworksAvailableWarningContainer";

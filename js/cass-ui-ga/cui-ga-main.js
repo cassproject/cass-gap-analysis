@@ -13,8 +13,6 @@
 //TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 //TODO getNumberOfCompetencyDescendants adjust for multi-node clusters
 
-//TODO parseSelectedGroupProfiles ONLY Include Org members that are contacts???
-
 //TODO Handle Same Competency IDs across multiple frameworks
 
 //**************************************************************************************************
@@ -355,17 +353,14 @@ function openAddFrameworkModal() {
 //**************************************************************************************************
 // Add Profile Modal
 //**************************************************************************************************
-
-
 function buildSelectedGroupMemberInfo(pkPem, selectedProfileObject,selectedGroupObject) {
     selectedProfileObject[pkPem] = pkPem;
     var gmo = {};
-    gmo.name = contactsByPkPemMap[pkPem].displayName;
+    gmo.name = viewableProfileByPkPemMap[pkPem].displayName;
     gmo.pkPem = pkPem;
     selectedGroupObject.member.push(gmo);
 }
 
-//TODO parseSelectedGroupProfiles ONLY Include Org members that are contacts???
 function parseSelectedGroupProfiles(selectedProfs) {
     var spo = {};
     for (var i=0;i<selectedProfs.length;i++) {
@@ -376,8 +371,8 @@ function parseSelectedGroupProfiles(selectedProfs) {
             go.idable = selectedProfs[i];
             go.member = [];
             for (var j=0;j<pg.member.length;j++) {
-                if (isPersonAContact(pg.member[j])) {
-                    buildSelectedGroupMemberInfo(personPemsByPersonIdMap[pg.member[j]],spo,go);
+                if (viewableProfileByPersonIdMap[pg.member[j]]) {
+                    buildSelectedGroupMemberInfo(viewableProfileByPersonIdMap[pg.member[j]].pkPem,spo,go);
                 }
             }
             if (go.member.length > 0) {
@@ -391,9 +386,9 @@ function parseSelectedGroupProfiles(selectedProfs) {
 }
 
 function parseSelectedIndividualProfiles(selectedProfs) {
-    for (var i=0;i<contactDisplayList.length;i++) {
-        var c = contactDisplayList[i];
-        if (selectedProfs.includes(buildIDableString(c.pkPem))) selectedProfiles.push(c.pkPem);
+    for (var i=0;i<viewableProfileList.length;i++) {
+        var p = viewableProfileList[i];
+        if (selectedProfs.includes(buildIDableString(p.pkPem))) selectedProfiles.push(p.pkPem);
     }
 }
 
@@ -457,15 +452,13 @@ function filterAddProfResults() {
 }
 
 function fillInAddProfIndividualsResults() {
-    if (contactDisplayList && contactDisplayList.length > 0) {
-        for (var i = 0; i < contactDisplayList.length; i++) {
-            var c = contactDisplayList[i];
-            if (isPkPemAPerson(c.pkPem)) {
-                $('<option>').val(buildIDableString(c.pkPem)).text(c.displayName).appendTo(ADD_PRF_RES_SELECT);
-            }
+    if (viewableProfileList && viewableProfileList.length > 0) {
+        for (var i = 0; i < viewableProfileList.length; i++) {
+            var p = viewableProfileList[i];
+            $('<option>').val(buildIDableString(p.pkPem)).text(p.displayName).appendTo(ADD_PRF_RES_SELECT);
         }
     }
-    else $('<option>').val(NA_SEL).text("There are no individuals in your contact list").appendTo(ADD_PRF_RES_SELECT);
+    else $('<option>').val(NA_SEL).text("There are no individuals available").appendTo(ADD_PRF_RES_SELECT);
 }
 
 function fillInAddProfGroupResults() {
@@ -475,7 +468,7 @@ function fillInAddProfGroupResults() {
             $('<option>').val(buildIDableString(pg.shortId())).text(pg.name).appendTo(ADD_PRF_RES_SELECT);
         }
     }
-    else $('<option>').val(NA_SEL).text("There are no groups to display").appendTo(ADD_PRF_RES_SELECT);
+    else $('<option>').val(NA_SEL).text("There are no groups available").appendTo(ADD_PRF_RES_SELECT);
 }
 
 function fillInAddProfResults(profType) {
@@ -624,7 +617,7 @@ function buildSidebarDetailsProfileDisplayNameList(profObj) {
     for (var pem in profObj) {
         if (profObj.hasOwnProperty(pem)) {
             var po = {};
-            po.name = contactsByPkPemMap[pem].displayName;
+            po.name = viewableProfileByPkPemMap[pem].displayName;
             po.pem = pem;
             po.asrs = profObj[pem];
             dna.push(po);
@@ -922,7 +915,7 @@ function buildSummaryIndividualProfileDisplayListObject() {
     var pdoa = [];
     for (var i=0;i<selectedProfiles.length;i++) {
         var pdo = {};
-        pdo.name = contactsByPkPemMap[selectedProfiles[i]].displayName;
+        pdo.name = viewableProfileByPkPemMap[selectedProfiles[i]].displayName;
         pdo.pem = selectedProfiles[i];
         pdoa.push(pdo);
     }

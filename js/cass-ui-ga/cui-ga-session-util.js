@@ -9,6 +9,8 @@
 const MAX_PRS_SEARCH_SIZE = 10000;
 const MAX_ORG_SEARCH_SIZE = 10000;
 
+const OVERWRITE_PERSON_NAME_WITH_CONTACT_NAME = true;
+
 //**************************************************************************************************
 // Variables
 
@@ -19,25 +21,21 @@ var loggedInPk;
 var loggedInPkPem;
 var loggedInPpkPem;
 
-var contactsByNameMap;
-var contactsByPkPemMap;
-var contactDisplayList;
-
-var personContactsByPkPemMap;
-var personPemsByPersonIdMap;
-
 var profileGroupList;
 var profileGroupMapByIDableString;
+
+var viewableProfileList;
+var viewableProfileByPkPemMap;
+var viewableProfileByPersonIdMap;
 
 //**************************************************************************************************
 // Data Structures
 //**************************************************************************************************
 
-function contactDisplayObj(contact) {
-    this.displayName = contact.displayName;
-    this.pk = contact.pk;
-    this.pkPem = contact.pk.toPem();
-    this.hide = false;
+function viewableProfObj(name,pk) {
+    this.displayName = name;
+    this.pk = pk;
+    this.pkPem = pk.toPem();
 }
 
 //**************************************************************************************************
@@ -81,68 +79,41 @@ function findProfileGroups(callback) {
 //**************************************************************************************************
 // Persons
 //**************************************************************************************************
-
-function isPersonAContact(personId) {
-    var pkPem = personPemsByPersonIdMap[personId];
-    if (pkPem) {
-        if (personContactsByPkPemMap.hasOwnProperty(pkPem)) return true;
-        else return false;
-    }
-    else return false;
-}
-
-function getPkPemsForPersonIds(pida) {
-    var pkPems = [];
-    for (var i=0;i<pida.length;i++) {
-        var pkp = personPemsByPersonIdMap[pida[i]];
-        if (pkp) pkPems.push(pkp);
-    }
-    return pkPems;
-}
-
-function isPkPemAPerson(pkPem) {
-    if (personContactsByPkPemMap.hasOwnProperty(pkPem)) return true;
-    else return false;
-}
-
-function buildContactsFingerprintMap() {
-    var cfm = {};
-    for (var pkPem in contactsByPkPemMap) {
-        if (contactsByPkPemMap.hasOwnProperty(pkPem)) {
-            var fp = contactsByPkPemMap[pkPem].pk.fingerprint();
-            cfm[fp] = pkPem;
-        }
-    }
-    return cfm;
-}
-
-function buildPersonFingerprintMap(ecpa) {
-    var pfpm = [];
-    for (var i=0;i<ecpa.length;i++) {
-        var pfp = ecpa[i].getFingerprintFromId();
-        if (pfp) pfpm[pfp] = ecpa[i];
-    }
-    return pfpm;
-}
-
-function buildPersonData(ecpa) {
-    personContactsByPkPemMap = {};
-    personPemsByPersonIdMap = {};
-    var pfpm = buildPersonFingerprintMap(ecpa);
-    var cfm = buildContactsFingerprintMap();
-    for (var fp in cfm) {
-        if (cfm.hasOwnProperty(fp)) {
-            if (pfpm.hasOwnProperty(fp)) {
-                personContactsByPkPemMap[cfm[fp]] = pfpm[fp];
-                personPemsByPersonIdMap[pfpm[fp].shortId()] = cfm[fp];
+function getPersonObjectPk(po) {
+    var poPk = null;
+    var poFp = po.getFingerprintFromId();
+    if (po.owner && po.owner.length > 0) {
+        for (var i=0;i<po.owner.length;i++) {
+            var testPk = EcPk.fromPem(po.owner[i]);
+            if (testPk.fingerprint() == poFp) {
+                poPk = testPk;
+                break;
             }
         }
     }
+    return poPk;
+}
+
+function buildViewableProfileData(ecpa) {
+    viewableProfileList = [];
+    viewableProfileByPkPemMap = {};
+    viewableProfileByPersonIdMap = {};
+    for (var i=0;i<ecpa.length;i++) {
+        var po = ecpa[i];
+        var poPk = getPersonObjectPk(po);
+        if (poPk) {
+            var vpo = new viewableProfObj(getStringVal(po.getName()),poPk);
+            viewableProfileList.push(vpo);
+            viewableProfileByPkPemMap[vpo.pkPem] = vpo;
+            viewableProfileByPersonIdMap[po.shortId()] = vpo;
+        }
+    }
+    viewableProfileList.sort(function (a, b) {return a.displayName.localeCompare(b.displayName);});
 }
 
 function handleFetchPersonsSuccess(ecpa,callback) {
     debugMessage("handleFetchPersonsSuccess: " + ecpa.length);
-    buildPersonData(ecpa);
+    buildViewableProfileData(ecpa);
     callback();
 }
 
@@ -163,37 +134,7 @@ function identifyEcPersons(callback) {
 }
 
 //**************************************************************************************************
-// Contacts
-//**************************************************************************************************
-
-function buildContactDisplayList() {
-    contactDisplayList = [];
-    for (var cPkPem in contactsByPkPemMap) {
-        if (contactsByPkPemMap.hasOwnProperty(cPkPem)) {
-            var cdo = new contactDisplayObj(contactsByPkPemMap[cPkPem]);
-            //applySamanthaContactsDisplayFilter(cdo);
-            contactDisplayList.push(cdo);
-        }
-    }
-    if (contactDisplayList.length > 1) {
-        contactDisplayList.sort(function (a, b) {
-            return a.displayName.localeCompare(b.displayName);
-        });
-    }
-}
-
-function buildContactsMaps() {
-    contactsByNameMap = {};
-    contactsByPkPemMap = {};
-    for (var i = 0; i < EcIdentityManager.contacts.length; i++) {
-        contactsByNameMap[EcIdentityManager.contacts[i].displayName] = EcIdentityManager.contacts[i];
-        contactsByPkPemMap[EcIdentityManager.contacts[i].pk.toPem()] = EcIdentityManager.contacts[i];
-    }
-    buildContactDisplayList();
-}
-
-//**************************************************************************************************
-// Repository Intialization
+// Repository Initialization
 //**************************************************************************************************
 function initRepo() {
     debugMessage("Initializing repository...");
@@ -203,7 +144,7 @@ function initRepo() {
 }
 
 //**************************************************************************************************
-// Identity Intialization
+// Identity Initialization
 //**************************************************************************************************
 function initSessionIdentity() {
     debugMessage("Initializing identity...");
@@ -227,6 +168,5 @@ function setupIdentity(serverParm,nameParm,pemParm) {
     loggedInIdentityName = nameParm;
     loggedInPpkPem = pemParm;
     initSessionIdentity();
-    buildContactsMaps();
     debugMessage("Identity set up.");
 }

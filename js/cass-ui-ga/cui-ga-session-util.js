@@ -81,7 +81,7 @@ function findProfileGroups(callback) {
 //**************************************************************************************************
 function getPersonObjectPk(po) {
     var poPk = null;
-    var poFp = po.getFingerprintFromId();
+    var poFp = po.getFingerprint();
     if (po.owner && po.owner.length > 0) {
         for (var i=0;i<po.owner.length;i++) {
             var testPk = EcPk.fromPem(po.owner[i]);

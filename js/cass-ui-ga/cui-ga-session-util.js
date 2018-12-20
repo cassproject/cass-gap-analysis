@@ -22,6 +22,7 @@ var loggedInPkPem;
 var loggedInPpkPem;
 
 var profileGroupList;
+var profileGroupMap;
 var profileGroupMapByIDableString;
 
 var viewableProfileList;
@@ -32,23 +33,31 @@ var viewableProfileByPersonIdMap;
 // Data Structures
 //**************************************************************************************************
 
-function viewableProfObj(name,pk) {
+function viewableProfObj(name,pk,person) {
     this.displayName = name;
     this.pk = pk;
     this.pkPem = pk.toPem();
+    this.personId = person.shortId();
+    this.person = person;
 }
 
 //**************************************************************************************************
 // Organizations/Profile Groups
 //**************************************************************************************************
 
+function addDataForGroup(go) {
+    profileGroupMapByIDableString[buildIDableString(go.shortId())] = go;
+    profileGroupList.push(go);
+    profileGroupMap[go.shortId()] = go;
+}
+
 function buildProfileGroupData(ecoa) {
     profileGroupMapByIDableString = {};
     profileGroupList = [];
+    profileGroupMap = {};
     for (var i=0;i<ecoa.length;i++) {
         if (ecoa[i].hasOwner(loggedInPk)) {
-            profileGroupMapByIDableString[buildIDableString(ecoa[i].shortId())] = ecoa[i];
-            profileGroupList.push(ecoa[i]);
+            addDataForGroup(ecoa[i]);
         }
     }
     profileGroupList.sort(function(a, b) {return a.name.localeCompare(b.name);})
@@ -102,7 +111,7 @@ function buildViewableProfileData(ecpa) {
         var po = ecpa[i];
         var poPk = getPersonObjectPk(po);
         if (poPk) {
-            var vpo = new viewableProfObj(getStringVal(po.getName()),poPk);
+            var vpo = new viewableProfObj(getStringVal(po.getName()),poPk,po);
             viewableProfileList.push(vpo);
             viewableProfileByPkPemMap[vpo.pkPem] = vpo;
             viewableProfileByPersonIdMap[po.shortId()] = vpo;

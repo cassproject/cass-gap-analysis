@@ -92,6 +92,18 @@ const GAP_REP_LIST = "#gapReportList";
 const COMP_DTL_MODAL = "#modal-competency-inf";
 const COMP_DTL_COMP_NAME = "#compDetCompName";
 
+//Group Edit Group Modal
+const GRP_EDIT_MODAL = "#modal-group-edit";
+const GRP_EDIT_SELECT = "#grpEditGroupSelection";
+const GRP_EDIT_SELECT_LIST = "#grpEditGroupSelList";
+const GRP_EDIT_DTLS = "#grpEditDetails";
+const GRP_EDIT_GRP_ID = "#grpEditGrpId";
+const GRP_EDIT_GRP_NAME = "#grpEditGrpName";
+const GRP_EDIT_MBR_LIST_CTR = "#grpEditMemberListCtr";
+const GRP_EDIT_MBR_LIST = "#grpEditMemberList";
+const GRP_EDIT_AVL_MBR_LIST = "#grpEditAvailableMemberList";
+
+
 //**************************************************************************************************
 // Variables
 
@@ -198,6 +210,15 @@ function showModalInputAsInvalid(fieldId) {
     $(fieldId).addClass("invalid");
 }
 
+function generateBreakHtmlFromArray(sa) {
+    var brhtml = "";
+    for (var i=0;i<sa.length;i++) {
+        if (i > 0) brhtml += "<br>";
+        brhtml += sa[i];
+    }
+    return brhtml;
+}
+
 function generateAnchorLink(href, text, target) {
     return "<a href=\"" + href + "\" target=\"" + target + "\">" + escapeSingleQuote(text) + "</a>";
 }
@@ -231,7 +252,6 @@ function generatePercentFromNumber(n) {
         }
     }
     else return "0%";
-
 }
 
 //**************************************************************************************************

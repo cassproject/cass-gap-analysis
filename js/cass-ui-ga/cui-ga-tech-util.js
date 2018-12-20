@@ -122,7 +122,7 @@ function addFrameworkD3NodeTracker(fcd,frameworkName) {
 //**************************************************************************************************
 
 function doesCompetencyHaveAssertion(compId, compAssrMap) {
-    if (!compAssrMap[compId] || compAssrMap[compId] == null) return false;
+    if (!compAssrMap || !compAssrMap.hasOwnProperty(compId) || !compAssrMap[compId] || compAssrMap[compId] == null) return false;
     else return true;
 }
 
@@ -231,6 +231,8 @@ function buildSelectedFrameworksCompetencyData(fwksMap,fnpgMap,compAssrMap) {
         var fw = fwksMap[fwId];
         debugMessage("building selected framework competency data for: " + fw.shortId());
         buildFrameworkCompetencyData(fcd,fwId,fnpgMap,compAssrMap,cpdm);
+        debugMessage("framework competency data built...");
+        debugMessage(fcd);
     };
     fcd.competencyPacketDataMap = cpdm;
     return fcd;

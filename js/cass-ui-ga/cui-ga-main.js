@@ -37,6 +37,8 @@ const NA_SEL = "na";
 const FWK_REP_TYPE = "fwrt";
 const COMP_REP_TYPE = "crt";
 
+const NEW_GRP_ID = "-1";
+
 
 //**************************************************************************************************
 // Variables
@@ -75,6 +77,11 @@ var gapD3NodeString;
 var frameworksToCollapse;
 var frameworksCollapsed;
 var collapseErrorTriggered;
+
+var sourceNameMap = {};
+
+var editGroupFromWhere;
+var currentEditGroupMembers;
 
 //**************************************************************************************************
 // Utility Functions
@@ -142,7 +149,7 @@ function countTotalNumberOfCompetenciesWithoutCoverage() {
 }
 
 function getAssertionsForCompetency(compId) {
-    if (competencyAssertionMap[compId]) return competencyAssertionMap[compId];
+    if (competencyAssertionMap && competencyAssertionMap.hasOwnProperty(compId) && competencyAssertionMap[compId]) return competencyAssertionMap[compId];
     else return [];
 }
 
@@ -267,12 +274,231 @@ function openProfileExplorer(profilePem) {
     sendInitProfileExplorerMessage(profilePem);
 }
 
+function registerAssertionSourceName(as) {
+    var sPkPem = as.getAgent().toPem();
+    if (!sourceNameMap[sPkPem]) {
+        sourceNameMap[sPkPem] = as.getAgentName();
+    }
+}
+
+function getAssertionSourceName(as) {
+    var sPkPem = as.getAgent().toPem();
+    if (sourceNameMap.hasOwnProperty(sPkPem)) {
+        return sourceNameMap[sPkPem];
+    }
+    else return as.getAgentName();
+}
+
 //**************************************************************************************************
 // Adjust Gap Rules Modal
 //**************************************************************************************************
 
 function openAdjustGapRulesModal() {
     //TODO openAdjustGapRulesModal
+}
+
+//**************************************************************************************************
+// Edit Group Modal
+//**************************************************************************************************
+
+function cancelEditGroups() {
+    $(GRP_EDIT_MODAL).foundation('close');
+    if (editGroupFromWhere == "profSelModal") openAddProfileModal();
+}
+
+function isValidEditGroupInput() {
+    var isValid = true;
+    var gName = $(GRP_EDIT_GRP_NAME).val();
+    var errMsg = [];
+    if (!gName || gName.trim() == "") {
+        showModalInputAsInvalid(GRP_EDIT_GRP_NAME);
+        errMsg.push("Group Name is required");
+        isValid = false;
+    }
+    if (!currentEditGroupMembers || currentEditGroupMembers.length == 0) {
+        $(GRP_EDIT_MBR_LIST_CTR).addClass("invalid");
+        errMsg.push("Groups must have at least one member");
+        isValid = false;
+    }
+    if (!isValid) showModalError(GRP_EDIT_MODAL,generateBreakHtmlFromArray(errMsg));
+    return isValid;
+}
+
+function generateNewGroup() {
+    var grp = new EcOrganization();
+    grp.generateId(repo.selectedServer);
+    grp.addOwner(loggedInPk);
+    return grp;
+}
+
+function saveGroupToServerSuccess(grp,isNew) {
+    if (isNew) addDataForGroup(grp);
+    profileGroupList.sort(function(a, b) {return a.name.localeCompare(b.name);})
+    enableModalInputsAndButtons();
+    hideModalBusy(GRP_EDIT_MODAL);
+    buildAndShowGroupSelectionList();
+}
+
+function saveGroupToServerFailure(errMsg) {
+    enableModalInputsAndButtons();
+    hideModalBusy(GRP_EDIT_MODAL);
+    showModalError(GRP_EDIT_MODAL,"Unable to save group: " + errMsg);
+}
+
+function saveGroupToServer(grp,isNew) {
+    EcRepository.save(grp,
+        function(msg) {
+            saveGroupToServerSuccess(grp,isNew);
+        },
+        saveGroupToServerFailure
+    );
+}
+
+function syncEditGroupMembers(grp) {
+    grp.member = [];
+    for (var i=0;i<currentEditGroupMembers.length;i++) {
+        grp.addMember(viewableProfileByPersonIdMap[currentEditGroupMembers[i]].person);
+    }
+}
+
+function saveGroupDetails() {
+    hideModalError(GRP_EDIT_MODAL);
+    $(GRP_EDIT_MBR_LIST_CTR).removeClass("invalid");
+    if (isValidEditGroupInput()) {
+        disableModalInputsAndButtons();
+        showModalBusy(GRP_EDIT_MODAL,"Saving Group");
+        var grp;
+        var groupId = $(GRP_EDIT_GRP_ID).val();
+        var isNew = (groupId == NEW_GRP_ID);
+        if  (isNew) grp = generateNewGroup();
+        else grp = profileGroupMap[groupId];
+        grp.setName($(GRP_EDIT_GRP_NAME).val());
+        syncEditGroupMembers(grp);
+        saveGroupToServer(grp,isNew);
+    }
+}
+
+function cancelGroupDetails() {
+    buildAndShowGroupSelectionList();
+}
+
+function addNewGroupFromEdit() {
+    currentEditGroupMembers = [];
+    $(GRP_EDIT_GRP_ID).val(NEW_GRP_ID);
+    $(GRP_EDIT_GRP_NAME).val("");
+    populateGroupMemberListForEdit();
+    populateGroupAvailableMemberListForEdit();
+    $(GRP_EDIT_SELECT).hide();
+    $(GRP_EDIT_DTLS).show();
+}
+
+function addMemberToGroupForEdit(personId) {
+    currentEditGroupMembers.push(personId);
+    populateGroupMemberListForEdit();
+    populateGroupAvailableMemberListForEdit();
+}
+
+function removeMemberFromGroupForEdit(personId) {
+    var index = currentEditGroupMembers.indexOf(personId);
+    if (index !== -1) currentEditGroupMembers.splice(index, 1);
+    populateGroupMemberListForEdit();
+    populateGroupAvailableMemberListForEdit();
+}
+
+function addPersonToMemberList(po,alreadyMember) {
+    var mLi = $("<li/>");
+    var mLiDiv = $("<div/>");
+    mLiDiv.addClass("grid-x");
+    var mToolsDiv = $("<div/>");
+    mToolsDiv.addClass("cell medium-1");
+    if (alreadyMember) {
+        mToolsDiv.attr("title","Remove member from group");
+        mToolsDiv.html("<a onclick=\"removeMemberFromGroupForEdit('" + po.personId + "')\"><i class=\"fa fa-minus-circle removeGrpMemberBtn\" aria-hidden=\"true\"></i></a>");
+    }
+    else {
+        mToolsDiv.attr("title","Add person to group");
+        mToolsDiv.html("<a onclick=\"addMemberToGroupForEdit('" + po.personId + "')\"><i class=\"fa fa-plus-circle addGrpMemberBtn\" aria-hidden=\"true\"></i></a>");
+    }
+    var mNameDiv = $("<div/>");
+    mNameDiv.addClass("cell medium-11");
+    mNameDiv.html(po.displayName);
+    mLiDiv.append(mToolsDiv);
+    mLiDiv.append(mNameDiv);
+    mLi.append(mLiDiv);
+    if (alreadyMember) $(GRP_EDIT_MBR_LIST).append(mLi);
+    else $(GRP_EDIT_AVL_MBR_LIST).append(mLi);
+}
+
+function populateGroupMemberListForEdit() {
+    $(GRP_EDIT_MBR_LIST).empty();
+    for (var i=0;i<currentEditGroupMembers.length;i++) {
+        var po = viewableProfileByPersonIdMap[currentEditGroupMembers[i]];
+        if (po) addPersonToMemberList(po,true);
+    }
+}
+
+function populateGroupAvailableMemberListForEdit() {
+    $(GRP_EDIT_AVL_MBR_LIST).empty();
+    for (var i=0;i<viewableProfileList.length;i++) {
+        var po = viewableProfileList[i];
+        if (!currentEditGroupMembers.includes(po.personId)) addPersonToMemberList(po,false);
+    }
+}
+
+function showGroupDetailsEdit(groupId) {
+    var pg = profileGroupMap[groupId];
+    if (pg) {
+        if (pg.member) currentEditGroupMembers = pg.member.slice(0);
+        else currentEditGroupMembers = [];
+        $(GRP_EDIT_GRP_ID).val(groupId);
+        $(GRP_EDIT_GRP_NAME).val(pg.getName());
+        populateGroupMemberListForEdit();
+        populateGroupAvailableMemberListForEdit();
+        $(GRP_EDIT_SELECT).hide();
+        $(GRP_EDIT_DTLS).show();
+    }
+}
+
+function buildGroupSelectionList() {
+    for (var i=0;i<profileGroupList.length;i++) {
+        var pg = profileGroupList[i];
+        var gLi = $("<li/>");
+        var gLiDiv = $("<div/>");
+        gLiDiv.addClass("grid-x");
+        if (pg.member && pg.member.length > 0) gLiDiv.attr("title",pg.member.length + " current member(s)");
+        else gLiDiv.attr("title","No current members");
+        var gToolsDiv = $("<div/>");
+        gToolsDiv.addClass("cell medium-1");
+        gToolsDiv.attr("title","Edit Group");
+        gToolsDiv.html("<a onclick=\"showGroupDetailsEdit('" + pg.shortId() + "')\"><i class=\"fa fa-book\" aria-hidden=\"true\"></i></a>");
+        var gNameDiv = $("<div/>");
+        gNameDiv.addClass("cell medium-11");
+        gNameDiv.html(pg.getName());
+        gLiDiv.append(gToolsDiv);
+        gLiDiv.append(gNameDiv);
+        gLi.append(gLiDiv);
+        $(GRP_EDIT_SELECT_LIST).append(gLi);
+    }
+}
+
+function buildAndShowGroupSelectionList() {
+    $(GRP_EDIT_SELECT_LIST).empty();
+    if (!profileGroupList || profileGroupList.length == 0) {
+        var noGroupsHtml = "<div class=\"callout primary\"><i class=\"fa fa-exclamation-triangle\"></i>  There are no groups available</div>";
+        $("<li>").html(noGroupsHtml).appendTo(GRP_EDIT_SELECT_LIST);
+    }
+    else buildGroupSelectionList();
+    $(GRP_EDIT_DTLS).hide();
+    $(GRP_EDIT_SELECT).show();
+}
+
+function openEditGroupModal(fromWhere) {
+    editGroupFromWhere = fromWhere;
+    hideModalError(GRP_EDIT_MODAL);
+    hideModalBusy(GRP_EDIT_MODAL);
+    enableModalInputsAndButtons();
+    buildAndShowGroupSelectionList();
+    $(GRP_EDIT_MODAL).foundation('open');
 }
 
 //**************************************************************************************************
@@ -633,7 +859,7 @@ function buildSidebarDetailsProfileAssertionList(asrList) {
         var ali = $("<li/>");
         ali.addClass("circleFocusDetailAssertion");
         var aliHtml = "<i class=\"fa fa-circle\" aria-hidden=\"true\"></i> holds <strong>" +
-            getCompetencyOrFrameworkName(asrList[i].competency) + "</strong> from <i>" + asrList[i].getAgentName() + "</i>";
+            getCompetencyOrFrameworkName(asrList[i].competency) + "</strong> from <i>" + getAssertionSourceName(asrList[i]) + "</i>";
         ali.html(aliHtml);
         aul.append(ali);
     }
@@ -1179,6 +1405,7 @@ function buildAssertionMaps() {
     profileAssertionsMap = {};
     assertionNegativeMap = {};
     $(assertionList).each(function (i, as) {
+        registerAssertionSourceName(as);
         assertionMap[as.shortId()] = as;
         assertionNegativeMap[as.shortId()] = as.getNegative();
         if (!competencyAssertionMap[as.competency] || competencyAssertionMap[as.competency] == null) {

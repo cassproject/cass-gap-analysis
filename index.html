@@ -29,6 +29,7 @@
                                         <a href="#">Tools</a>
                                         <ul class="menu vertical">
                                             <li><a title="View and Adjust Gap Analysis Rules" onclick="openAdjustGapRulesModal();"><i class="fa fa-cogs" aria-hidden="true"></i> View/Adjust Rules</a></li>
+                                            <li><a title="Edit Profile Groups" onclick="openEditGroupModal('menu');"><i class="fa fa-users" aria-hidden="true"></i> Edit Groups</a></li>
                                             <li><a title="Print Analysis"><i class="fa fa-print" aria-hidden="true"></i> Print</a></li>
                                         </ul>
                                     </li>
@@ -210,7 +211,7 @@
             <div class="cell medium-12">
                 <button class="button cassUiModalButton" onclick="addSelectedProfiles();">Add</button>
                 &nbsp;&nbsp;
-                <button class="button cassUiModalButtonDisabled" id="addProfEditGroupsBtn"  disabled="disabled">Edit Groups</button>
+                <button class="button cassUiModalButton" id="addProfEditGroupsBtn" onclick="openEditGroupModal('profSelModal');">Edit Groups</button>
                 &nbsp;&nbsp;
                 <button class="button secondary cassUiModalButton" data-close>Cancel</button>
             </div>
@@ -320,6 +321,75 @@
                 <button class="button cassUiModalButton">Export</button>
                 &nbsp;&nbsp;
                 <button class="button secondary cassUiModalButton" data-close>Close</button>
+            </div>
+        </div>
+        <div class="grid-x">
+            <div class="cell cassUiModalBusyCtr" style="display:none">
+                <div class="grid-container">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-12 text-center">
+                            <h5 class="cassUiModalBusyText"></h5>
+                            <img class="cassUiBusyImg" src="img/CASS-loading-64px.gif" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="cell cassUiModalErrorCtr" style="display:none">
+                <div class="grid-container">
+                    <div class="grid-x grid-padding-x grid-padding-y">
+                        <div class="cell medium-12 text-center cassUiError">
+                            <h5><i class="fa fa-exclamation-triangle"></i> <span class="cassUiModalErrorText"></span></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="close-button" data-close aria-label="Close reveal" type="button">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="reveal" id="modal-group-edit" data-reveal>
+        <h3><i class="fa fa-users" aria-hidden="true"></i> Edit Groups</h3>
+        <div id="grpEditGroupSelection" class="grid-x">
+            <div id="grpEditGroupSelListCtr" class="cell medium-12">
+                <ul id="grpEditGroupSelList" class="no-bullets"></ul>
+            </div>
+            <div class="cell medium-12">
+                <button class="button cassUiModalButton" onclick="addNewGroupFromEdit()">Create Group</button>
+                &nbsp;&nbsp;
+                <button class="button secondary cassUiModalButton" onclick="cancelEditGroups()">Cancel</button>
+            </div>
+        </div>
+        <div id="grpEditDetails" class="grid-x">
+            <input type="hidden" id="grpEditGrpId">
+            <div class="cell medium-12">
+                <input type="text"  class="cassUiModalInput" id="grpEditGrpName" placeholder="Group Name">
+            </div>
+            <div class="cell medium-6">
+                <div class="grid-x">
+                    <div class="cell medium-12">
+                        <span class="boldText">Current Members</span>
+                    </div>
+                    <div id="grpEditMemberListCtr" class="cell medium-12">
+                        <ul id="grpEditMemberList" class="no-bullets"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="cell medium-6">
+                <div class="grid-x">
+                    <div class="cell medium-12">
+                        <span class="boldText">Available Members</span>
+                    </div>
+                    <div id="grpEditAvailableMemberListCtr" class="cell medium-12">
+                        <ul id="grpEditAvailableMemberList" class="no-bullets"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="cell medium-12">
+                <button class="button cassUiModalButton" onclick="saveGroupDetails()">Save</button>
+                &nbsp;&nbsp;
+                <button class="button secondary cassUiModalButton" onclick="cancelGroupDetails()">Cancel</button>
             </div>
         </div>
         <div class="grid-x">

@@ -213,8 +213,8 @@ input:checked~.switch-paddle {
 }
 
 .cassUiModalInput {
-    width: 37rem;
-    margin-left: 1.5rem;
+    /*width: 37rem;*/
+    /*margin-left: 1.5rem;*/
 }
 
 .cassUiModalTextArea {
@@ -338,6 +338,41 @@ input:checked~.switch-paddle {
     overflow-y: auto;
 }
 
+.addGrpMemberBtn {
+    color: #286D31;
+}
+
+.removeGrpMemberBtn {
+    color: #B34925;
+}
+
+#grpEditGroupSelListCtr,
+#grpEditMemberListCtr,
+#grpEditAvailableMemberListCtr {
+    margin-bottom:1.2rem;
+    max-height: 15rem;
+    overflow-y: auto;
+    background-color: #eee;
+    border: 1px solid #999;
+    border-radius: 2px;
+}
+
+#grpEditMemberListCtr.invalid {
+    background-color: #F3CB7A;
+    border-color: #EA6E07;
+}
+
+#grpEditGroupSelList li,
+#grpEditMemberList li,
+#grpEditAvailableMemberList li {
+    padding: 0 .5rem;
+}
+
+#grpEditMemberListCtr,
+#grpEditAvailableMemberListCtr{
+    width: 92%;
+}
+
 .gapReportOutputSpecial {
     font-style: italic;
     color:#999;
@@ -349,6 +384,9 @@ input:checked~.switch-paddle {
     padding-left:4px;
 }
 
+#grpEditGroupSelList li:hover,
+#grpEditMemberList li:hover,
+#grpEditAvailableMemberList li:hover,
 .gapReportAreaGapLineItem:hover {
     background: #ccc;
 }

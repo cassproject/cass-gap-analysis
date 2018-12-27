@@ -1405,17 +1405,20 @@ function buildAssertionMaps() {
     profileAssertionsMap = {};
     assertionNegativeMap = {};
     $(assertionList).each(function (i, as) {
-        registerAssertionSourceName(as);
-        assertionMap[as.shortId()] = as;
-        assertionNegativeMap[as.shortId()] = as.getNegative();
-        if (!competencyAssertionMap[as.competency] || competencyAssertionMap[as.competency] == null) {
-            competencyAssertionMap[as.competency] = [];
+        var isNegativeAssr = as.getNegative();
+        assertionNegativeMap[as.shortId()] = isNegativeAssr;
+        if (!isNegativeAssr) { //for right now, just ignore negative assertions
+            registerAssertionSourceName(as);
+            assertionMap[as.shortId()] = as;
+            if (!competencyAssertionMap[as.competency] || competencyAssertionMap[as.competency] == null) {
+                competencyAssertionMap[as.competency] = [];
+            }
+            competencyAssertionMap[as.competency].push(as);
+            if (!profileAssertionsMap[as.getSubject().toPem()] || profileAssertionsMap[as.getSubject().toPem()] == null) {
+                profileAssertionsMap[as.getSubject().toPem()] = [];
+            }
+            profileAssertionsMap[as.getSubject().toPem()].push(as);
         }
-        competencyAssertionMap[as.competency].push(as);
-        if (!profileAssertionsMap[as.getSubject().toPem()] || profileAssertionsMap[as.getSubject().toPem()] == null) {
-            profileAssertionsMap[as.getSubject().toPem()] = [];
-        }
-        profileAssertionsMap[as.getSubject().toPem()].push(as);
     });
 }
 
@@ -1427,7 +1430,7 @@ function sortAssertionList() {
 
 function processRelevantAssertions() {
     if (assertionList.length > 0) {
-        showPageAsBusy("Processing assertions (step 1 of 3)...");
+        showPageAsBusy("Processing assertions (step 1 of 2)...");
         sortAssertionList();
         debugMessage(assertionList);
         buildAssertionMaps();

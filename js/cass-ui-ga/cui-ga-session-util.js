@@ -103,18 +103,32 @@ function getPersonObjectPk(po) {
     return poPk;
 }
 
+function buildPersonObjectName(po) {
+    var name = getStringVal(po.getName());
+    if (!name || name.trim() == "") {
+        name = (po.givenName ? po.givenName + " " : "");
+        name += (po.familyName ? po.familyName : "");
+    }
+    return name.trim();
+}
+
 function buildViewableProfileData(ecpa) {
+    var addedProfiles = [];
     viewableProfileList = [];
     viewableProfileByPkPemMap = {};
     viewableProfileByPersonIdMap = {};
     for (var i=0;i<ecpa.length;i++) {
         var po = ecpa[i];
         var poPk = getPersonObjectPk(po);
-        if (poPk) {
-            var vpo = new viewableProfObj(getStringVal(po.getName()),poPk,po);
-            viewableProfileList.push(vpo);
-            viewableProfileByPkPemMap[vpo.pkPem] = vpo;
-            viewableProfileByPersonIdMap[po.shortId()] = vpo;
+        if (poPk && !addedProfiles.includes(po.getFingerprint())) {
+            var poName = buildPersonObjectName(po);
+            if (poName && poName != "") {
+                var vpo = new viewableProfObj(poName,poPk,po);
+                viewableProfileList.push(vpo);
+                viewableProfileByPkPemMap[vpo.pkPem] = vpo;
+                viewableProfileByPersonIdMap[po.shortId()] = vpo;
+                addedProfiles.push(po.getFingerprint());
+            }
         }
     }
     viewableProfileList.sort(function (a, b) {return a.displayName.localeCompare(b.displayName);});

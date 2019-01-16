@@ -30805,44 +30805,6 @@ Triple = stjs.extend(Triple, null, [], function(constructor, prototype) {
     };
 }, {}, {});
 /**
- *  Object Helper Functions
- * 
- *  @author fritz.ray@eduworks.com
- *  @class EcObject
- *  @module com.eduworks.ec
- */
-var EcObject = function() {};
-EcObject = stjs.extend(EcObject, null, [], function(constructor, prototype) {
-    /**
-     *  Returns true if the result is an object.
-     * 
-     *  @param {any} o Object to test.
-     *  @return true iff the object is an object.
-     *  @static
-     *  @method isArray
-     */
-    constructor.isObject = function(o) {
-        if (o == null) 
-            return false;
-        return (typeof o) == "object";
-    };
-    /**
-     *  Returns keys on the object
-     * 
-     *  @param {any} o Object to test.
-     *  @return List of keys
-     *  @static
-     *  @method keys
-     */
-    constructor.keys = function(o) {
-        return ecKeys(o);
-    };
-}, {}, {});
-var Callback5 = function() {};
-Callback5 = stjs.extend(Callback5, null, [], function(constructor, prototype) {
-    prototype.$invoke = function(p1, p2, p3, p4, p5) {};
-}, {}, {});
-/**
  *  Array Helper Functions
  * 
  *  @author fritz.ray@eduworks.com
@@ -30926,6 +30888,10 @@ EcArray = stjs.extend(EcArray, null, [], function(constructor, prototype) {
             }
         return false;
     };
+}, {}, {});
+var Callback5 = function() {};
+Callback5 = stjs.extend(Callback5, null, [], function(constructor, prototype) {
+    prototype.$invoke = function(p1, p2, p3, p4, p5) {};
 }, {}, {});
 var EcLocalStorage = function() {};
 EcLocalStorage = stjs.extend(EcLocalStorage, null, [], function(constructor, prototype) {
@@ -31657,6 +31623,42 @@ EcDate = stjs.extend(EcDate, null, [], function(constructor, prototype) {
     };
 }, {}, {});
 /**
+ *  Object Helper Functions
+ * 
+ *  @author fritz.ray@eduworks.com
+ *  @class EcObject
+ *  @module com.eduworks.ec
+ */
+var EcObject = function() {};
+EcObject = stjs.extend(EcObject, null, [], function(constructor, prototype) {
+    /**
+     *  Returns true if the result is an object.
+     * 
+     *  @param {any} o Object to test.
+     *  @return true iff the object is an object.
+     *  @static
+     *  @method isArray
+     */
+    constructor.isObject = function(o) {
+        if (EcArray.isArray(o)) 
+            return false;
+        if (o == null) 
+            return false;
+        return (typeof o) == "object";
+    };
+    /**
+     *  Returns keys on the object
+     * 
+     *  @param {any} o Object to test.
+     *  @return List of keys
+     *  @static
+     *  @method keys
+     */
+    constructor.keys = function(o) {
+        return ecKeys(o);
+    };
+}, {}, {});
+/**
  *  A graph consisting of a set of vertices of type <code>V</code>
  *  set and a set of edges of type <code>E</code>.  Edges of this
  *  graph type have exactly two endpoints; whether these endpoints
@@ -32269,6 +32271,15 @@ EcAsyncHelper = stjs.extend(EcAsyncHelper, null, [], function(constructor, proto
      */
     prototype.stop = function() {
         this.counter = -1;
+    };
+    /**
+     *  Is preventing 'after' from being called?
+     * 
+     *  @method isStopped
+     *  @return whether it is stopped.
+     */
+    prototype.isStopped = function() {
+        return this.counter <= -1;
     };
 }, {}, {});
 if (document && document.getElementsByTagName)
@@ -41085,10 +41096,7 @@ EcRemoteLinkedData = stjs.extend(EcRemoteLinkedData, EcLinkedData, [], function(
         var pem = newReader.toPem();
         if (this.reader == null) 
             this.reader = new Array();
-        for (var i = 0; i < this.reader.length; i++) 
-            if (this.reader[i] == pem) 
-                return;
-        this.reader.push(pem);
+        EcArray.setAdd(this.reader, pem);
         this.signature = null;
     };
     /**
@@ -41102,9 +41110,7 @@ EcRemoteLinkedData = stjs.extend(EcRemoteLinkedData, EcLinkedData, [], function(
         var pem = oldReader.toPem();
         if (this.reader == null) 
             this.reader = new Array();
-        for (var i = 0; i < this.reader.length; i++) 
-            if (this.reader[i] == pem) 
-                this.reader.splice(i, 1);
+        EcArray.setRemove(this.reader, pem);
         this.signature = null;
     };
     /**
@@ -67594,7 +67600,7 @@ EcEncryptedValue = stjs.extend(EcEncryptedValue, EbacEncryptedValue, [], functio
                 return;
             }
         }
-        this.reader.push(pem);
+        EcArray.setAdd(this.reader, pem);
         var payloadSecret = this.decryptSecret();
         if (payloadSecret == null) {
             console.error("Cannot add a Reader if you don't know the secret");
@@ -67610,15 +67616,84 @@ EcEncryptedValue = stjs.extend(EcEncryptedValue, EbacEncryptedValue, [], functio
      *  @method removeReader
      */
     prototype.removeReader = function(oldReader) {
+        var payloadSecret = this.decryptSecret();
         var pem = oldReader.toPem();
-        if (this.reader == null) {
-            this.reader = new Array();
+        if (this.reader != null) {
+            EcArray.setRemove(this.reader, pem);
         }
-        for (var i = 0; i < this.reader.length; i++) {
-            if (this.reader[i] == pem) {
-                this.reader.splice(i, 1);
+        if (payloadSecret == null) {
+            console.error("Cannot remove a Reader if you don't know the secret");
+            return;
+        }
+        this.secret = new Array();
+        if (this.owner != null) 
+            for (var i = 0; i < this.owner.length; i++) 
+                EcArray.setAdd(this.secret, EcRsaOaep.encrypt(EcPk.fromPem(this.owner[i]), payloadSecret.toEncryptableJson()));
+        if (this.reader != null) 
+            for (var i = 0; i < this.reader.length; i++) 
+                EcArray.setAdd(this.secret, EcRsaOaep.encrypt(EcPk.fromPem(this.reader[i]), payloadSecret.toEncryptableJson()));
+    };
+    /**
+     *  Adds a reader to the object, if the reader does not exist.
+     * 
+     *  @param {EcPk} newReader PK of the new reader.
+     *  @param {Callback0} success   Callback triggered after successful encryption
+     *  @param {Callback1<String>}   failure Callback triggered if error during secret decryption
+     *  @memberOf EcEncryptedValue
+     *  @method addReaderAsync
+     */
+    prototype.addReaderAsync = function(newReader, success, failure) {
+        this.decryptSecretAsync(function(payloadSecret) {
+            EcRsaOaepAsync.encrypt(newReader, payloadSecret.toEncryptableJson(), function(s) {
+                var pem = newReader.toPem();
+                if (this.reader == null) {
+                    this.reader = new Array();
+                }
+                for (var i = 0; i < this.reader.length; i++) {
+                    if (this.reader[i] == pem) {
+                        return;
+                    }
+                }
+                EcArray.setAdd(this.reader, pem);
+                EcArray.setAdd(this.secret, s);
+                success();
+            }, failure);
+        }, failure);
+    };
+    /**
+     *  Removes a reader from the object, if the reader does exist.
+     * 
+     *  @param {EcPk} oldReader PK of the old reader.
+     *  @param {Callback0} success   Callback triggered after successful encryption
+     *  @param {Callback1<String>}   failure Callback triggered if error during secret decryption
+     *  @memberOf EcEncryptedValue
+     *  @method removeReaderAsync
+     */
+    prototype.removeReaderAsync = function(oldReader, success, failure) {
+        var me = this;
+        this.decryptSecretAsync(function(payloadSecret) {
+            var pem = oldReader.toPem();
+            if (me.reader != null) {
+                EcArray.setRemove(me.reader, pem);
             }
-        }
+            var ary = new Array();
+            if (this.owner != null) 
+                for (var i = 0; i < this.owner.length; i++) 
+                    EcArray.setAdd(ary, EcPk.fromPem(this.owner[i]));
+            if (this.reader != null) 
+                for (var i = 0; i < this.reader.length; i++) 
+                    EcArray.setAdd(ary, EcPk.fromPem(this.reader[i]));
+            me.secret = new Array();
+            var eah = new EcAsyncHelper();
+            eah.each(ary, function(ecPk, callback0) {
+                EcRsaOaepAsync.encrypt(oldReader, payloadSecret.toEncryptableJson(), function(secret) {
+                    EcArray.setRemove(me.secret, secret);
+                    callback0();
+                }, failure);
+            }, function(strings) {
+                success();
+            });
+        }, failure);
     };
 }, {encryptOnSaveMap: {name: "Map", arguments: [null, null]}, secret: {name: "Array", arguments: [null]}, owner: {name: "Array", arguments: [null]}, signature: {name: "Array", arguments: [null]}, reader: {name: "Array", arguments: [null]}, atProperties: {name: "Array", arguments: [null]}}, {});
 /**
@@ -69966,6 +70041,80 @@ EcAssertion = stjs.extend(EcAssertion, Assertion, [], function(constructor, prot
             this.subject.removeReader(newReader);
         }
         EcRemoteLinkedData.prototype.removeReader.call(this, newReader);
+    };
+    prototype.addReaderAsync = function(newReader, success, failure) {
+        var ary = new Array();
+        if (this.agent != null) {
+            ary.push(this.agent);
+        }
+        if (this.assertionDate != null) {
+            ary.push(this.assertionDate);
+        }
+        if (this.decayFunction != null) {
+            ary.push(this.decayFunction);
+        }
+        if (this.evidence != null) 
+            for (var i = 0; i < this.evidence.length; i++) {
+                ary.push(this.evidence[i]);
+            }
+        if (this.expirationDate != null) {
+            ary.push(this.expirationDate);
+        }
+        if (this.negative != null) {
+            ary.push(this.negative);
+        }
+        if (this.subject != null) {
+            ary.push(this.subject);
+        }
+        EcRemoteLinkedData.prototype.addReader.call(this, newReader);
+        var eah = new EcAsyncHelper();
+        eah.each(ary, function(ecEncryptedValue, callback0) {
+            ecEncryptedValue.addReaderAsync(newReader, callback0, function(s) {
+                if (!eah.isStopped()) {
+                    eah.stop();
+                    failure("Failed to add reader to an assertion.");
+                }
+            });
+        }, function(strings) {
+            success();
+        });
+    };
+    prototype.removeReaderAsync = function(oldReader, success, failure) {
+        var ary = new Array();
+        if (this.agent != null) {
+            ary.push(this.agent);
+        }
+        if (this.assertionDate != null) {
+            ary.push(this.assertionDate);
+        }
+        if (this.decayFunction != null) {
+            ary.push(this.decayFunction);
+        }
+        if (this.evidence != null) 
+            for (var i = 0; i < this.evidence.length; i++) {
+                ary.push(this.evidence[i]);
+            }
+        if (this.expirationDate != null) {
+            ary.push(this.expirationDate);
+        }
+        if (this.negative != null) {
+            ary.push(this.negative);
+        }
+        if (this.subject != null) {
+            ary.push(this.subject);
+        }
+        EcRemoteLinkedData.prototype.removeReader.call(this, oldReader);
+        var eah = new EcAsyncHelper();
+        eah.each(ary, function(ecEncryptedValue, callback0) {
+            ecEncryptedValue.removeReaderAsync(oldReader, callback0, function(s) {
+                if (!eah.isStopped()) {
+                    eah.stop();
+                    failure("Failed to remove reader to an assertion.");
+                }
+            });
+        }, function(strings) {
+            success();
+        });
     };
     prototype.getSearchStringByTypeAndCompetency = function(competency) {
         return "(" + this.getSearchStringByType() + " AND competency:\"" + competency.shortId() + "\")";

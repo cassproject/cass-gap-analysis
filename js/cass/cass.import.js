@@ -143,7 +143,8 @@ CSVExport = stjs.extend(CSVExport, Exporter, [], function(constructor, prototype
                 if (props[prop] != null && props[prop] != "" && stjs.isInstanceOf(props[prop].constructor, Object)) {
                     this.flattenObject(flattenedObject, props[prop], id);
                 } else {
-                    (flattenedObject)[id] = props[prop];
+                    var display = Thing.getDisplayStringFrom(props[prop]);
+                    (flattenedObject)[id] = display;
                 }
             }
         };

@@ -355,9 +355,9 @@ function saveGroupToServer(grp,isNew) {
 }
 
 function syncEditGroupMembers(grp) {
-    grp.member = [];
+    grp.employee = [];
     for (var i=0;i<currentEditGroupMembers.length;i++) {
-        grp.addMember(viewableProfileByPersonIdMap[currentEditGroupMembers[i]].person);
+        grp.addEmployee(viewableProfileByPersonIdMap[currentEditGroupMembers[i]].person);
     }
 }
 
@@ -448,7 +448,7 @@ function populateGroupAvailableMemberListForEdit() {
 function showGroupDetailsEdit(groupId) {
     var pg = profileGroupMap[groupId];
     if (pg) {
-        if (pg.member) currentEditGroupMembers = pg.member.slice(0);
+        if (pg.employee) currentEditGroupMembers = pg.employee.slice(0);
         else currentEditGroupMembers = [];
         $(GRP_EDIT_GRP_ID).val(groupId);
         $(GRP_EDIT_GRP_NAME).val(pg.getName());
@@ -465,7 +465,7 @@ function buildGroupSelectionList() {
         var gLi = $("<li/>");
         var gLiDiv = $("<div/>");
         gLiDiv.addClass("grid-x");
-        if (pg.member && pg.member.length > 0) gLiDiv.attr("title",pg.member.length + " current member(s)");
+        if (pg.employee && pg.employee.length > 0) gLiDiv.attr("title",pg.employee.length + " current member(s)");
         else gLiDiv.attr("title","No current members");
         var gToolsDiv = $("<div/>");
         gToolsDiv.addClass("cell medium-1");
@@ -584,25 +584,25 @@ function buildSelectedGroupMemberInfo(pkPem, selectedProfileObject,selectedGroup
     var gmo = {};
     gmo.name = viewableProfileByPkPemMap[pkPem].displayName;
     gmo.pkPem = pkPem;
-    selectedGroupObject.member.push(gmo);
+    selectedGroupObject.employee.push(gmo);
 }
 
 function parseSelectedGroupProfiles(selectedProfs) {
     var spo = {};
     for (var i=0;i<selectedProfs.length;i++) {
         var pg = profileGroupMapByIDableString[selectedProfs[i]];
-        if (pg && pg.member && pg.member.constructor === Array) {
+        if (pg && pg.employee && pg.employee.constructor === Array) {
             var go = {};
             go.name = pg.name;
             go.idable = selectedProfs[i];
-            go.member = [];
-            for (var j=0;j<pg.member.length;j++) {
-                if (viewableProfileByPersonIdMap[pg.member[j]]) {
-                    buildSelectedGroupMemberInfo(viewableProfileByPersonIdMap[pg.member[j]].pkPem,spo,go);
+            go.employee = [];
+            for (var j=0;j<pg.employee.length;j++) {
+                if (viewableProfileByPersonIdMap[pg.employee[j]]) {
+                    buildSelectedGroupMemberInfo(viewableProfileByPersonIdMap[pg.employee[j]].pkPem,spo,go);
                 }
             }
-            if (go.member.length > 0) {
-                go.member.sort(function(a, b) {return a.name.localeCompare(b.name);});
+            if (go.employee.length > 0) {
+                go.employee.sort(function(a, b) {return a.name.localeCompare(b.name);});
                 selectedGroups.push(go);
             }
         }
@@ -1192,9 +1192,9 @@ function buildGroupSelectedProfileList() {
         var memDivId = g.idable + "_mems";
         var gLiHtml  = "<span class=\"circleFocusOverviewGroup\">" + g.name + "</span>";
         gLiHtml += "&nbsp;&nbsp;<a onclick=\"$('#" + memDivId + "').toggle();toggleGroupMemDivInd($(this));\" " +
-            "title=\"Show Group Members\" class=\"button tiny groupMemberIndToggle\">" + g.member.length +
+            "title=\"Show Group Members\" class=\"button tiny groupMemberIndToggle\">" + g.employee.length +
             "&nbsp;&nbsp;<i class=\"fa fa-chevron-right\"></i></a>";
-        var memDiv = buildGroupMemberListDiv(memDivId,g.member);
+        var memDiv = buildGroupMemberListDiv(memDivId,g.employee);
         gLi.html(gLiHtml);
         gLi.append(memDiv);
         $(CIR_FCS_SUM_SEL_PROF_LIST).append(gLi);
@@ -1400,10 +1400,6 @@ function collapseSelectedFrameworks() {
 
 function buildAssertionMaps() {
     showPageAsBusy("Processing assertions (step 2 of 2)...");
-    assertionMap = {};
-    competencyAssertionMap = {};
-    profileAssertionsMap = {};
-    assertionNegativeMap = {};
     $(assertionList).each(function (i, as) {
         var isNegativeAssr = as.getNegative();
         assertionNegativeMap[as.shortId()] = isNegativeAssr;
@@ -1429,6 +1425,10 @@ function sortAssertionList() {
 }
 
 function processRelevantAssertions() {
+    assertionMap = {};
+    competencyAssertionMap = {};
+    profileAssertionsMap = {};
+    assertionNegativeMap = {};
     if (assertionList.length > 0) {
         showPageAsBusy("Processing assertions (step 1 of 2)...");
         sortAssertionList();

@@ -1,6 +1,28 @@
 # Change Log
 
-## [Unreleased](https://github.com/cassproject/cass-gap-analysis/tree/HEAD)
+## [1.0.6](https://github.com/cassproject/cass-gap-analysis/tree/1.0.6) (2019-02-15)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.5...1.0.6)
+
+**Closed issues:**
+
+- Modify gap 'groups' to use Organization.employee instead of Organization.member [\#13](https://github.com/cassproject/cass-gap-analysis/issues/13)
+
+## [1.0.5](https://github.com/cassproject/cass-gap-analysis/tree/1.0.5) (2019-02-08)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/0.4.26...1.0.5)
+
+## [0.4.26](https://github.com/cassproject/cass-gap-analysis/tree/0.4.26) (2019-01-18)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.3...0.4.26)
+
+## [1.0.3](https://github.com/cassproject/cass-gap-analysis/tree/1.0.3) (2019-01-17)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.4...1.0.3)
+
+## [1.0.4](https://github.com/cassproject/cass-gap-analysis/tree/1.0.4) (2019-01-17)
+**Fixed bugs:**
+
+- Build Person names based on family/given names fields if name is undefined [\#10](https://github.com/cassproject/cass-gap-analysis/issues/10)
+- Print and Edit Rules buttons don't do anything. [\#9](https://github.com/cassproject/cass-gap-analysis/issues/9)
+- Negative assertions are shown as positive assertions. [\#8](https://github.com/cassproject/cass-gap-analysis/issues/8)
+- Identities don't seem to show names in the list of profiles. \(Look in family/given names fields as well as name field\) [\#5](https://github.com/cassproject/cass-gap-analysis/issues/5)
 
 **Closed issues:**
 

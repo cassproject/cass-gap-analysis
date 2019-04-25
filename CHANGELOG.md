@@ -1,5 +1,47 @@
 # Change Log
 
+## [1.2.6](https://github.com/cassproject/cass-gap-analysis/tree/1.2.6) (2019-04-24)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.5...1.2.6)
+
+## [1.2.5](https://github.com/cassproject/cass-gap-analysis/tree/1.2.5) (2019-04-24)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.4...1.2.5)
+
+## [1.2.4](https://github.com/cassproject/cass-gap-analysis/tree/1.2.4) (2019-04-19)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.3...1.2.4)
+
+## [1.2.3](https://github.com/cassproject/cass-gap-analysis/tree/1.2.3) (2019-04-15)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.2...1.2.3)
+
+## [1.2.2](https://github.com/cassproject/cass-gap-analysis/tree/1.2.2) (2019-04-15)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.1...1.2.2)
+
+## [1.2.1](https://github.com/cassproject/cass-gap-analysis/tree/1.2.1) (2019-04-15)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.0...1.2.1)
+
+## [1.2.0](https://github.com/cassproject/cass-gap-analysis/tree/1.2.0) (2019-04-12)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.1.2...1.2.0)
+
+## [1.1.2](https://github.com/cassproject/cass-gap-analysis/tree/1.1.2) (2019-03-27)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.1.1...1.1.2)
+
+## [1.1.1](https://github.com/cassproject/cass-gap-analysis/tree/1.1.1) (2019-03-22)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.1.0...1.1.1)
+
+## [1.1.0](https://github.com/cassproject/cass-gap-analysis/tree/1.1.0) (2019-03-15)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.10...1.1.0)
+
+## [1.0.10](https://github.com/cassproject/cass-gap-analysis/tree/1.0.10) (2019-03-08)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.9...1.0.10)
+
+## [1.0.9](https://github.com/cassproject/cass-gap-analysis/tree/1.0.9) (2019-03-01)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.8...1.0.9)
+
+## [1.0.8](https://github.com/cassproject/cass-gap-analysis/tree/1.0.8) (2019-02-21)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.7...1.0.8)
+
+## [1.0.7](https://github.com/cassproject/cass-gap-analysis/tree/1.0.7) (2019-02-15)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.6...1.0.7)
+
 ## [1.0.6](https://github.com/cassproject/cass-gap-analysis/tree/1.0.6) (2019-02-15)
 [Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.0.5...1.0.6)
 

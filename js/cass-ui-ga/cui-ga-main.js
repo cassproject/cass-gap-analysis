@@ -1542,7 +1542,7 @@ function getAssertionSearchQueryForSelectedProfiles() {
     if (selectedProfiles.length > 1) searchQuery = "("
     for (var i=0;i<selectedProfiles.length;i++) {
         if (i > 0) searchQuery += " OR ";
-        searchQuery += "(\\*@reader:\"" + selectedProfiles[i] + "\")";
+        searchQuery += "(\\*@reader:\"" + selectedProfiles[i] + "\" OR \"" + selectedProfiles[i] + "\")";
     }
     if (selectedProfiles.length > 1) searchQuery += ")";
     debugMessage("Assertion search query: " + searchQuery);

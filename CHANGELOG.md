@@ -1,5 +1,8 @@
 # Change Log
 
+## [1.2.8](https://github.com/cassproject/cass-gap-analysis/tree/1.2.8) (2019-05-10)
+[Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.7...1.2.8)
+
 ## [1.2.7](https://github.com/cassproject/cass-gap-analysis/tree/1.2.7) (2019-04-26)
 [Full Changelog](https://github.com/cassproject/cass-gap-analysis/compare/1.2.6...1.2.7)
 

@@ -1036,7 +1036,7 @@ function generateCompetencyLineItemHtmlForGapSummaryCompList(compNode, hasChildr
     var cto = generateCompetencyLineItemHtmlGapSummaryCoverageText(compNode);
     liHtml += "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildGapSummaryCompItemElementId(compNode) + "\" " +
         "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(compNode.getId().trim()) + "',true)\">" +
-        compNode.getName().trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
+        getStringVal(compNode.getName()).trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
     return liHtml;
 }
 

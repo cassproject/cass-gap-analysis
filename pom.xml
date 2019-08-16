@@ -4,7 +4,7 @@
 
 	<groupId>org.cassproject</groupId>
 	<artifactId>cass-gap-analysis</artifactId>
-	<version>1.2.20</version>
+	<version>1.2.21</version>
 	<packaging>rar</packaging>
 
 	<name>cass-gap-analysis</name>

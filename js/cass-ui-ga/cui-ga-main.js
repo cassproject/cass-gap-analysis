@@ -1101,7 +1101,7 @@ function buildGapSummaryFrameworkItemHtml(fw) {
         "<i class=\"fa fa-chevron-right " + CIR_FCS_SUM_ITEM_CLASS_ID + "\" aria-hidden=\"true\"></i></a>" +
         "&nbsp;&nbsp;<a title=\"" + cto["title"] + "\" class=\"psiItem\" id=\"" + buildIDableString(fw.shortId().trim()) + "_psi" + "\" " +
         "onclick=\"zoomGapCgByD3NodeId('" + escapeSingleQuote(fw.shortId().trim()) + "',true)\">" +
-        fw.name.trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
+        getStringVal(fw.getName()).trim() + "&nbsp;&nbsp;" +  cto["details"] + "</a>";
     return fwLiHtml;
 }
 

@@ -61948,8 +61948,6 @@ EcRepository = stjs.extend(EcRepository, null, [], function(constructor, prototy
                         delete (EcRepository.fetching)[url];
                         if (EcRepository.caching) {
                             (EcRepository.cache)[url] = strings[i];
-                            if (strings[i].id != null) 
-                                (EcRepository.cache)[url] = strings[i].id;
                         }
                         success(strings[i]);
                     }
@@ -61983,8 +61981,6 @@ EcRepository = stjs.extend(EcRepository, null, [], function(constructor, prototy
                     delete (EcRepository.fetching)[url];
                     if (EcRepository.caching) {
                         (EcRepository.cache)[url] = strings[j];
-                        if (strings[j].id != null) 
-                            (EcRepository.cache)[url] = strings[j].id;
                     }
                     return strings[j];
                 }

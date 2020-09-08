@@ -2211,7 +2211,7 @@ AssertionProcessor = stjs.extend(AssertionProcessor, null, [], function(construc
         } else if (InquiryPacket.IPType.COMPETENCY.equals(ip.type)) 
             result = new EcAssertion().getSearchStringByTypeAndCompetency(competency);
         for (var i = 0; i < ip.subject.length; i++) 
-            result += " AND (\\*@reader:\"" + ip.subject[i].toPem() + "\")";
+            result += " AND (\\*reader:\"" + ip.subject[i].toPem() + "\")";
         this.log(ip, "Search Query: " + result);
         if (result != null) 
             return result;
@@ -2232,7 +2232,7 @@ AssertionProcessor = stjs.extend(AssertionProcessor, null, [], function(construc
             result += ")";
         }
         for (var i = 0; i < ip.subject.length; i++) 
-            result += " AND (\\*@reader:\"" + ip.subject[i].toPem() + "\")";
+            result += " AND (\\*reader:\"" + ip.subject[i].toPem() + "\")";
         if (result != null) 
             return result;
          throw new RuntimeException("Trying to build an assertion search query on an unsupported type: " + ip.type);
@@ -3260,7 +3260,7 @@ CompetencyGraphBuilder = stjs.extend(CompetencyGraphBuilder, null, [], function(
         query += ")";
         if (this.subjects != null) {
             for (var i = 0; i < this.subjects.length; i++) {
-                query += " AND (\\*@reader:\"" + this.subjects[i].toPem() + "\")";
+                query += " AND (\\*reader:\"" + this.subjects[i].toPem() + "\")";
             }
         }
         return query;
@@ -4070,7 +4070,7 @@ ProfileProcessor = stjs.extend(ProfileProcessor, null, [], function(constructor,
         for (var i = 0; i < this.profilePkPems.length; i++) {
             if (i > 0) 
                 searchQuery += " OR ";
-            searchQuery += "(\\*@reader:\"" + this.profilePkPems[i] + "\")";
+            searchQuery += "(\\*reader:\"" + this.profilePkPems[i] + "\")";
         }
         if (this.profilePkPems.length > 1) 
             searchQuery += ")";

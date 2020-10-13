@@ -62393,7 +62393,8 @@ EcRepository = stjs.extend(EcRepository, null, [], function(constructor, prototy
                                 return;
                             }
                         }
-                        failure("Cannot delete object without a signature. If deleting from a server, use the non-static _delete");
+                        if (failure != null) 
+                            failure("Cannot delete object without a signature. If deleting from a server, use the non-static _delete");
                     } else 
                         EcRemote._delete(targetUrl, signatureSheet, success, failure);
                 }, failure);
@@ -62406,7 +62407,8 @@ EcRepository = stjs.extend(EcRepository, null, [], function(constructor, prototy
                             return;
                         }
                     }
-                    failure("Cannot delete object without a signature. If deleting from a server, use the non-static _delete");
+                    if (failure != null) 
+                        failure("Cannot delete object without a signature. If deleting from a server, use the non-static _delete");
                 } else 
                     EcRemote._delete(targetUrl, signatureSheet, success, failure);
             }
